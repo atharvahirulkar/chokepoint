@@ -889,6 +889,6 @@ with st.expander("Methodology, held-out recall, bootstrap CIs"):
 
 
 st.markdown(
-    '<div class="footer">CHOKEPOINT · SIC × DS³ × BOW CAPITAL · DEFENSE HACKATHON 2026 · BUILT SOLO</div>',
+    '<div class="footer">CHOKEPOINT · SIC × DS³ × BOW CAPITAL · DEFENSE HACKATHON 2026</div>',
     unsafe_allow_html=True,
 )

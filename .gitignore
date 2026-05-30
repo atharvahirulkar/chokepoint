@@ -7,6 +7,7 @@ __pycache__/
 .DS_Store
 mlruns/
 mlflow.db
+.hf_space_staging/
 *.egg-info/
 .pytest_cache/
 .env
