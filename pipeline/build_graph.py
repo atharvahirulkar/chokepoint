@@ -38,21 +38,56 @@ def naics_id(code: str) -> str:
 
 
 def build(df: pd.DataFrame) -> nx.MultiDiGraph:
-    """Aggregate contracts into a weighted supply graph."""
-    g = nx.MultiDiGraph()
+    """Aggregate contracts into a weighted supply graph.
 
-    # Vendor -> Agency aggregates
+    If a `fiscal_year` column exists, also attach per-year weight + count
+    dicts to each edge so downstream temporal-persistence features can be
+    computed without re-reading the parquet.
+    """
+    g = nx.MultiDiGraph()
+    has_fy = "fiscal_year" in df.columns
+
+    group_cols_va = ["recipient_name", "awarding_agency_name"]
+    group_cols_vn = ["recipient_name", "naics_code"]
+
+    # Aggregate per (vendor, agency)
     va = (
-        df.groupby(["recipient_name", "awarding_agency_name"], dropna=False)
+        df.groupby(group_cols_va, dropna=False)
         .agg(weight=("award_amount", "sum"), count=("award_amount", "size"))
         .reset_index()
     )
-    # Vendor -> NAICS aggregates
     vn = (
-        df.groupby(["recipient_name", "naics_code"], dropna=False)
+        df.groupby(group_cols_vn, dropna=False)
         .agg(weight=("award_amount", "sum"), count=("award_amount", "size"))
         .reset_index()
     )
+
+    # Per-year breakdowns
+    va_by_year: dict[tuple[str, str], dict[int, dict[str, float]]] = {}
+    vn_by_year: dict[tuple[str, str], dict[int, dict[str, float]]] = {}
+    if has_fy:
+        fy_va = (
+            df.groupby(group_cols_va + ["fiscal_year"], dropna=False)
+            .agg(weight=("award_amount", "sum"), count=("award_amount", "size"))
+            .reset_index()
+        )
+        for row in fy_va.itertuples(index=False):
+            key = (row.recipient_name, row.awarding_agency_name)
+            va_by_year.setdefault(key, {})[int(row.fiscal_year)] = {
+                "weight": float(row.weight),
+                "count": int(row.count),
+            }
+        fy_vn = (
+            df.groupby(group_cols_vn + ["fiscal_year"], dropna=False)
+            .agg(weight=("award_amount", "sum"), count=("award_amount", "size"))
+            .reset_index()
+        )
+        for row in fy_vn.itertuples(index=False):
+            key = (row.recipient_name, row.naics_code)
+            vn_by_year.setdefault(key, {})[int(row.fiscal_year)] = {
+                "weight": float(row.weight),
+                "count": int(row.count),
+            }
 
     naics_desc = (
         df.dropna(subset=["naics_code"])
@@ -74,21 +109,40 @@ def build(df: pd.DataFrame) -> nx.MultiDiGraph:
         )
 
     for row in va.itertuples(index=False):
+        attrs = {
+            "edge_type": "VENDOR_AGENCY",
+            "weight": float(row.weight),
+            "count": int(row.count),
+        }
+        if has_fy:
+            attrs["by_year"] = va_by_year.get(
+                (row.recipient_name, row.awarding_agency_name), {}
+            )
         g.add_edge(
             vendor_id(row.recipient_name),
             agency_id(row.awarding_agency_name),
-            edge_type="VENDOR_AGENCY",
-            weight=float(row.weight),
-            count=int(row.count),
+            **attrs,
         )
     for row in vn.itertuples(index=False):
+        attrs = {
+            "edge_type": "VENDOR_NAICS",
+            "weight": float(row.weight),
+            "count": int(row.count),
+        }
+        if has_fy:
+            attrs["by_year"] = vn_by_year.get(
+                (row.recipient_name, row.naics_code), {}
+            )
         g.add_edge(
             vendor_id(row.recipient_name),
             naics_id(row.naics_code),
-            edge_type="VENDOR_NAICS",
-            weight=float(row.weight),
-            count=int(row.count),
+            **attrs,
         )
+
+    if has_fy:
+        years = sorted(int(y) for y in df["fiscal_year"].dropna().unique())
+        g.graph["fiscal_years"] = years
+        log.info("Graph annotated with fiscal years: %s", years)
 
     return g
 

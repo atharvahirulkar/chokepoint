@@ -103,3 +103,45 @@ def metrics() -> MetricsResult:
 def eval_report() -> dict:
     """Return the persisted eval_report.json contents for the dashboard."""
     return state.eval_report
+
+
+@app.get("/heatmap/critical")
+def critical_heatmap() -> dict:
+    """Agency × critical-NAICS supplier-count matrix.
+
+    For each pair (sub-agency, critical NAICS), report the number of vendors
+    that serve it. Cells with count = 1 are sole-source chokepoints.
+    """
+    from pipeline.critical_naics import CRITICAL_NAICS, critical_naics_id
+
+    pair_cov = state.pair_coverage
+    # Collect distinct agencies and critical NAICS present in coverage map
+    agencies: dict[str, str] = {}  # agency_id -> name
+    naics: dict[str, str] = {}     # naics_id -> description
+    cell: dict[tuple[str, str], int] = {}
+    for (aid, nid), holders in pair_cov.items():
+        if not critical_naics_id(nid):
+            continue
+        if aid not in agencies:
+            agencies[aid] = state.graph.nodes[aid].get("name", aid)
+        if nid not in naics:
+            naics[nid] = state.graph.nodes[nid].get("description") or nid[3:]
+        cell[(aid, nid)] = len(holders)
+
+    # Stable column ordering by NAICS code (zero-padded sort)
+    naics_ids = sorted(naics.keys(), key=lambda nid: nid)
+    agency_ids = sorted(agencies.keys(), key=lambda aid: agencies[aid])
+
+    matrix: list[list[int | None]] = []
+    for aid in agency_ids:
+        row: list[int | None] = []
+        for nid in naics_ids:
+            row.append(cell.get((aid, nid)))
+        matrix.append(row)
+
+    return {
+        "agencies": [agencies[aid] for aid in agency_ids],
+        "naics_codes": [nid[3:] for nid in naics_ids],
+        "naics_descriptions": [naics[nid] for nid in naics_ids],
+        "supplier_counts": matrix,
+    }

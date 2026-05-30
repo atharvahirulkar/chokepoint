@@ -36,6 +36,12 @@ _FEATURE_PHRASES: dict[str, str] = {
     "critical_naics_market_share": "holds a meaningful share of all defense-critical spend",
     "hhi_score": "shows concentrated value across few agencies",
     "degree_centrality": "has high degree centrality in the graph",
+    "years_active": "has been active across multiple fiscal years",
+    "years_active_ratio": "has been active across {value:.0%} of the observation window",
+    "log_award_growth_ratio": "shows accelerating award growth over the observation window",
+    "is_emerging_concentration": "is an emerging-concentration vendor (newly sole-sourcing)",
+    "is_persistent_supplier": "is a persistent supplier (multi-year presence)",
+    "persistent_critical_signal": "is the persistent sole source for defense-critical NAICS",
 }
 
 

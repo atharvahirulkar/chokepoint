@@ -51,6 +51,11 @@ RAW_FEATURE_COLS: list[str] = [
     "hhi_score",
     "naics_hhi",
     "critical_naics_market_share",
+    "years_active",
+    "years_active_ratio",
+    "award_growth_ratio",
+    "is_emerging_concentration",
+    "is_persistent_supplier",
 ]
 
 MODEL_FEATURE_COLS: list[str] = [
@@ -74,6 +79,12 @@ MODEL_FEATURE_COLS: list[str] = [
     "log_critical_naics_count",
     "log_critical_sole_source_count",
     "critical_breadth",
+    "years_active",
+    "years_active_ratio",
+    "log_award_growth_ratio",
+    "is_emerging_concentration",
+    "is_persistent_supplier",
+    "persistent_critical_signal",
 ]
 
 ISO_CONTAMINATION = 0.05
@@ -116,6 +127,18 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     # categories" independent of total breadth.
     out["critical_breadth"] = (
         out["sole_source_ratio"] * out["log_critical_naics_count"]
+    )
+
+    # Temporal interaction: persistent sole-source supplier in defense-
+    # critical NAICS is the canonical chokepoint pattern (eg. Aerojet
+    # Rocketdyne's solid rocket motor monopoly). Combine persistence with
+    # the critical-NAICS sole-source count.
+    out["log_award_growth_ratio"] = np.log1p(
+        out.get("award_growth_ratio", pd.Series(1.0, index=out.index)).astype(float)
+    )
+    out["persistent_critical_signal"] = (
+        out.get("is_persistent_supplier", 0).astype(float)
+        * out["log_critical_sole_source_count"]
     )
     return out
 

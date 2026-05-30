@@ -144,9 +144,16 @@ def compute_features(g: nx.MultiDiGraph) -> pd.DataFrame:
     )
     log.info("Total critical-NAICS spend: $%.0f", critical_total_spend)
 
+    fiscal_years: list[int] = list(g.graph.get("fiscal_years", []))
+    has_fy = bool(fiscal_years)
+
     rows: list[dict] = []
     vendors = vendor_nodes(g)
-    log.info("Per-vendor features for %d vendors", len(vendors))
+    log.info(
+        "Per-vendor features for %d vendors (fiscal years: %s)",
+        len(vendors),
+        fiscal_years if has_fy else "single-year aggregate",
+    )
 
     for vid in vendors:
         name = g.nodes[vid]["name"]
@@ -156,16 +163,29 @@ def compute_features(g: nx.MultiDiGraph) -> pd.DataFrame:
         critical_naics_ids: set[str] = set()
         total_value = 0.0
         contract_count = 0
+        # Per-year award value across ALL the vendor's outgoing edges
+        # (only VENDOR_AGENCY rolls into dollar revenue — VENDOR_NAICS edges
+        #  carry the same dollars on the other side).
+        award_by_year: dict[int, float] = {y: 0.0 for y in fiscal_years}
+        active_years: set[int] = set()
 
         for _, target, d in g.out_edges(vid, data=True):
             w = float(d.get("weight", 0.0))
             c = int(d.get("count", 0))
             et = d.get("edge_type")
+            by_year = d.get("by_year", {}) if has_fy else {}
             if et == "VENDOR_AGENCY":
                 agencies_val[target] = agencies_val.get(target, 0.0) + w
                 agencies_count[target] = agencies_count.get(target, 0) + c
                 total_value += w
                 contract_count += c
+                if has_fy:
+                    for y, payload in by_year.items():
+                        award_by_year[y] = award_by_year.get(y, 0.0) + float(
+                            payload.get("weight", 0.0)
+                        )
+                        if payload.get("count", 0) > 0:
+                            active_years.add(int(y))
             elif et == "VENDOR_NAICS":
                 naics_val[target] = naics_val.get(target, 0.0) + w
                 if critical_naics_id(target):
@@ -215,6 +235,45 @@ def compute_features(g: nx.MultiDiGraph) -> pd.DataFrame:
 
         avg_award = (total_value / contract_count) if contract_count > 0 else 0.0
 
+        # Temporal persistence features (need fiscal_year-tagged edges).
+        if has_fy and fiscal_years:
+            years_active = len(active_years)
+            n_years = len(fiscal_years)
+            years_active_ratio = years_active / n_years
+            # YoY growth: compare the two most-recent FULL fiscal years.
+            # We treat the latest year as potentially partial (e.g. FY2026
+            # captured in May 2026), so growth uses years[-3] vs years[-2]
+            # when n_years >= 3; otherwise the only available pair.
+            sorted_years = sorted(fiscal_years)
+            if n_years >= 3:
+                early_year, late_year = sorted_years[-3], sorted_years[-2]
+            elif n_years == 2:
+                early_year, late_year = sorted_years[0], sorted_years[1]
+            else:
+                early_year = late_year = sorted_years[0]
+            early_val = award_by_year.get(early_year, 0.0)
+            late_val = award_by_year.get(late_year, 0.0)
+            if early_val > 0:
+                award_growth_ratio = late_val / early_val
+            else:
+                award_growth_ratio = 10.0 if late_val > 0 else 1.0
+            award_growth_ratio = min(award_growth_ratio, 100.0)
+            # Emerging concentration: zero presence in the earliest year of
+            # the window but nonzero in any later year.
+            earliest = sorted_years[0]
+            is_emerging = int(
+                award_by_year.get(earliest, 0.0) == 0
+                and sum(award_by_year.get(y, 0.0) for y in sorted_years[1:]) > 0
+            )
+            # Persistent: active in at least half the observed years.
+            is_persistent = int(years_active >= max(2, (n_years + 1) // 2))
+        else:
+            years_active = 1
+            years_active_ratio = 1.0
+            award_growth_ratio = 1.0
+            is_emerging = 0
+            is_persistent = 0
+
         rows.append(
             {
                 "vendor_id": vid,
@@ -236,6 +295,11 @@ def compute_features(g: nx.MultiDiGraph) -> pd.DataFrame:
                 "hhi_score": hhi_agency,
                 "naics_hhi": naics_hhi,
                 "critical_naics_market_share": critical_market_share,
+                "years_active": years_active,
+                "years_active_ratio": years_active_ratio,
+                "award_growth_ratio": award_growth_ratio,
+                "is_emerging_concentration": is_emerging,
+                "is_persistent_supplier": is_persistent,
             }
         )
 
@@ -267,6 +331,11 @@ def main() -> None:
         "hhi_score",
         "naics_hhi",
         "critical_naics_market_share",
+        "years_active",
+        "years_active_ratio",
+        "award_growth_ratio",
+        "is_emerging_concentration",
+        "is_persistent_supplier",
     ]
     log.info("Feature stats:\n%s", df[summary_cols].describe().T)
 

@@ -1,60 +1,48 @@
 {
   "rule_positives": "test-split vendors with coverage_drop >= pool quantile 0.75 (~top 25%)",
-  "drop_threshold": 0.09743589743589744,
+  "drop_threshold": 0.03628298030471944,
   "pool_size": 1000,
   "test_size": 250,
   "test_positives": [
     {
-      "vendor": "DLT SOLUTIONS",
-      "vendor_id": "V::DLT SOLUTIONS"
+      "vendor": "ENTERPRISE TECHNOLOGY SOLUTIONS",
+      "vendor_id": "V::ENTERPRISE TECHNOLOGY SOLUTIONS"
     },
     {
-      "vendor": "VERIZON BUSINESS NETWORK SERVICES",
-      "vendor_id": "V::VERIZON BUSINESS NETWORK SERVICES"
+      "vendor": "AANTILIA",
+      "vendor_id": "V::AANTILIA"
     },
     {
-      "vendor": "GENERAL DYNAMICS MISSION SYSTEMS",
-      "vendor_id": "V::GENERAL DYNAMICS MISSION SYSTEMS"
+      "vendor": "PARSONS GOVERNMENT SERVICES",
+      "vendor_id": "V::PARSONS GOVERNMENT SERVICES"
     },
     {
-      "vendor": "NORTHROP GRUMMAN SYSTEMS",
-      "vendor_id": "V::NORTHROP GRUMMAN SYSTEMS"
+      "vendor": "CARAHSOFT TECHNOLOGY",
+      "vendor_id": "V::CARAHSOFT TECHNOLOGY"
     },
     {
-      "vendor": "BARBARICUM",
-      "vendor_id": "V::BARBARICUM"
+      "vendor": "SAN ANTONIO LIGHTHOUSE FOR BLIND",
+      "vendor_id": "V::SAN ANTONIO LIGHTHOUSE FOR BLIND"
     },
     {
-      "vendor": "FUDURIC & KG",
-      "vendor_id": "V::FUDURIC & KG"
+      "vendor": "SEVA TECHNICAL SERVICES",
+      "vendor_id": "V::SEVA TECHNICAL SERVICES"
     },
     {
-      "vendor": "CW RESOURCES",
-      "vendor_id": "V::CW RESOURCES"
+      "vendor": "SUNCORE DISTRIBUTION",
+      "vendor_id": "V::SUNCORE DISTRIBUTION"
     },
     {
-      "vendor": "LEIDOS",
-      "vendor_id": "V::LEIDOS"
+      "vendor": "OMANG TECHNOLOGIES & TRADING L.L.C",
+      "vendor_id": "V::OMANG TECHNOLOGIES & TRADING L.L.C"
     },
     {
-      "vendor": "RAYTHEON",
-      "vendor_id": "V::RAYTHEON"
+      "vendor": "ONE TECH SOL",
+      "vendor_id": "V::ONE TECH SOL"
     },
     {
-      "vendor": "MISCELLANEOUS FOREIGN AWARDEES",
-      "vendor_id": "V::MISCELLANEOUS FOREIGN AWARDEES"
-    },
-    {
-      "vendor": "INDUSTRIES FOR BLIND AND VISUALLY IMPAIRED",
-      "vendor_id": "V::INDUSTRIES FOR BLIND AND VISUALLY IMPAIRED"
-    },
-    {
-      "vendor": "CELEEN",
-      "vendor_id": "V::CELEEN"
-    },
-    {
-      "vendor": "B & H INTERNATIONAL",
-      "vendor_id": "V::B & H INTERNATIONAL"
+      "vendor": "D7",
+      "vendor_id": "V::D7"
     }
   ]
 }

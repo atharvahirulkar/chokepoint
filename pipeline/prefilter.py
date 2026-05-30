@@ -1,15 +1,19 @@
 """Stream the giant USAspending archive CSVs into a defense-only slice.
 
-Reads every CSV under data/raw/ (recursively) in chunks, keeps only rows
-whose awarding agency looks like a DoD component, projects down to the
-columns we care about, and writes data/processed/contracts.parquet directly.
+Recurses through every directory under data/raw/ matching FY-pattern,
+streams each CSV in chunks, keeps only rows whose awarding agency looks
+like a DoD component, attaches `fiscal_year` (parsed from the parent dir
+name like FY2024_All_Contracts_Full_*), and writes
+data/processed/contracts.parquet.
 
-Run this INSTEAD OF `make ingest` when working from the FYxxxx_All_Contracts
-bulk archives — those files are too big to load whole.
+Run via `make prefilter`. Configure the years included via the YEARS env
+var (default: 2024,2025,2026).
 """
 from __future__ import annotations
 
 import logging
+import os
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -41,11 +45,31 @@ DEFENSE_KEYWORDS = (
     "DARPA",
 )
 
+# Which fiscal years to include. Override with `YEARS=2021,2022,...` env var.
+DEFAULT_YEARS = (2024, 2025, 2026)
+FY_DIR_PATTERN = re.compile(r"FY(\d{4})_All_Contracts_Full", re.IGNORECASE)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 log = logging.getLogger("prefilter")
+
+
+def configured_years() -> set[int]:
+    raw = os.environ.get("YEARS")
+    if not raw:
+        return set(DEFAULT_YEARS)
+    out: set[int] = set()
+    for token in raw.split(","):
+        token = token.strip()
+        if not token:
+            continue
+        try:
+            out.add(int(token))
+        except ValueError:
+            log.warning("Skipping unparsable YEARS token: %r", token)
+    return out or set(DEFAULT_YEARS)
 
 
 def is_defense(agency: str) -> bool:
@@ -55,11 +79,22 @@ def is_defense(agency: str) -> bool:
     return any(k in a for k in DEFENSE_KEYWORDS)
 
 
-def stream_filter(path: Path) -> pd.DataFrame:
-    """Stream one CSV, keep defense rows + needed columns."""
+def fiscal_year_for_path(path: Path) -> int | None:
+    """Extract FY from a path like data/raw/FY2024_All_Contracts_Full_*/foo.csv."""
+    for part in path.parts:
+        m = FY_DIR_PATTERN.search(part)
+        if m:
+            try:
+                return int(m.group(1))
+            except ValueError:
+                return None
+    return None
+
+
+def stream_filter(path: Path, fy: int) -> pd.DataFrame:
+    """Stream one CSV, keep defense rows + needed columns. Attach fiscal_year."""
     head = pd.read_csv(path, nrows=0)
     cols = [c for c in SRC_COLS if c in head.columns]
-    log.info("  using cols: %s", cols)
 
     kept: list[pd.DataFrame] = []
     total_in = 0
@@ -73,48 +108,67 @@ def stream_filter(path: Path) -> pd.DataFrame:
         total_kept += len(sub)
         if not sub.empty:
             kept.append(sub)
-        if total_in % (CHUNK_SIZE * 5) == 0:
-            log.info(
-                "    %s scanned=%d kept=%d", path.name, total_in, total_kept
-            )
-    log.info("  %s: scanned=%d kept=%d", path.name, total_in, total_kept)
+    log.info("  %s [FY%d]: scanned=%d kept=%d", path.name, fy, total_in, total_kept)
     if not kept:
         return pd.DataFrame(columns=cols)
-    return pd.concat(kept, ignore_index=True)
+    out = pd.concat(kept, ignore_index=True)
+    out["fiscal_year"] = fy
+    return out
 
 
 def main() -> None:
-    csvs = sorted(RAW_DIR.rglob("*.csv"))
-    if not csvs:
-        log.error("No CSVs under %s", RAW_DIR)
-        return
-    log.info("Prefiltering %d CSVs", len(csvs))
+    years = configured_years()
+    log.info("Configured fiscal years: %s", sorted(years))
 
-    frames = []
-    for p in csvs:
-        log.info("Reading %s (%.0f MB)", p, p.stat().st_size / 1e6)
-        frames.append(stream_filter(p))
+    # Discover CSVs under the FY directories matching the configured years.
+    csvs: list[tuple[Path, int]] = []
+    for sub in sorted(RAW_DIR.iterdir()):
+        if not sub.is_dir():
+            continue
+        m = FY_DIR_PATTERN.search(sub.name)
+        if not m:
+            continue
+        fy = int(m.group(1))
+        if fy not in years:
+            log.info("Skipping %s (FY%d not in scope)", sub.name, fy)
+            continue
+        for csv in sorted(sub.glob("*.csv")):
+            csvs.append((csv, fy))
+
+    if not csvs:
+        log.error(
+            "No CSVs found under %s for years %s. Drop USAspending archives "
+            "into data/raw/FY{year}_All_Contracts_Full_*/.",
+            RAW_DIR,
+            sorted(years),
+        )
+        return
+
+    total_mb = sum(p.stat().st_size for p, _ in csvs) / 1e6
+    log.info("Prefiltering %d CSVs (%.0f MB total) across FYs %s",
+             len(csvs), total_mb, sorted({fy for _, fy in csvs}))
+
+    frames: list[pd.DataFrame] = []
+    for path, fy in csvs:
+        log.info("Reading %s [FY%d] (%.0f MB)", path, fy, path.stat().st_size / 1e6)
+        frames.append(stream_filter(path, fy))
+
     df = pd.concat(frames, ignore_index=True)
-    log.info("Defense rows total: %d", len(df))
+    log.info("Defense rows total (pre-clean): %d", len(df))
 
     # Rename federal_action_obligation -> award_amount to match ingest schema.
     if "federal_action_obligation" in df.columns:
         df = df.rename(columns={"federal_action_obligation": "award_amount"})
 
-    # In the FYxxxx archives, awarding_agency_name is almost always
-    # "DEPARTMENT OF DEFENSE". The actual differentiation (Army/Navy/AF/DLA)
-    # lives in awarding_sub_agency_name. Treat sub-agency as the effective
-    # agency for the graph so AGENCY nodes are meaningful.
+    # Roll up to sub-agency for meaningful AGENCY nodes.
     if "awarding_sub_agency_name" in df.columns:
         sub = df["awarding_sub_agency_name"].astype("string").str.strip()
         df["awarding_agency_name"] = sub.where(
             sub.notna() & sub.ne(""), df["awarding_agency_name"]
         )
 
-    # Reuse normalization from ingest module.
     from pipeline.ingest import clean  # local import to avoid cycles
 
-    # Ensure all KEEP_COLS exist with the names ingest.clean expects.
     expected = [
         "recipient_name",
         "awarding_agency_name",
@@ -127,12 +181,52 @@ def main() -> None:
     for c in expected:
         if c not in df.columns:
             df[c] = pd.NA
-    df = df[expected]
+    # Keep fiscal_year through cleaning.
+    fy_series = df["fiscal_year"]
+    df_for_clean = df[expected].copy()
+    cleaned = clean(df_for_clean)
+    # Re-attach fiscal_year via the original index since clean drops rows.
+    # clean() drops by mask but keeps row order; we re-align by re-running
+    # the same row-dropping rules here for safety.
+    null_award = (
+        cleaned["award_amount"].isna() | (cleaned["award_amount"] <= 0)
+    )
+    assert not null_award.any(), "ingest.clean did not drop null awards"
+    # Easier path: re-do the join by passing fiscal_year through ingest.clean
+    # via a side df keyed by an index that survives the clean step. Since
+    # clean rebuilds the index, we instead inner-join on the survivable
+    # columns. The simplest robust approach: reset original df, run clean,
+    # then reattach FY from the surviving row mask.
 
-    cleaned = clean(df)
+    # Recompute the mask exactly like ingest.clean does so we can pick the
+    # corresponding fiscal_year entries.
+    from pipeline.ingest import normalize_vendor, normalize_naics
+
+    orig = df[expected].copy()
+    orig_norm = orig.copy()
+    orig_norm["recipient_name"] = orig_norm["recipient_name"].map(normalize_vendor)
+    orig_norm["naics_code"] = orig_norm["naics_code"].map(normalize_naics)
+    orig_norm["awarding_agency_name"] = (
+        orig_norm["awarding_agency_name"].astype("string").str.strip().str.upper()
+    )
+    orig_norm["award_amount"] = pd.to_numeric(orig_norm["award_amount"], errors="coerce")
+    drop_mask = (
+        orig_norm["award_amount"].isna()
+        | (orig_norm["award_amount"] <= 0)
+        | orig_norm["recipient_name"].eq("")
+        | orig_norm["recipient_name"].isna()
+        | orig_norm["naics_code"].eq("")
+        | orig_norm["naics_code"].isna()
+        | orig_norm["awarding_agency_name"].isna()
+        | orig_norm["awarding_agency_name"].eq("")
+    )
+    surviving_fy = fy_series.loc[~drop_mask].reset_index(drop=True)
+    cleaned["fiscal_year"] = surviving_fy.astype("int16").values
+
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     cleaned.to_parquet(OUT_PATH, index=False)
     log.info("Wrote %s (%d rows)", OUT_PATH, len(cleaned))
+    log.info("FY breakdown:\n%s", cleaned["fiscal_year"].value_counts().sort_index())
 
 
 if __name__ == "__main__":
