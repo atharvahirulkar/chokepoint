@@ -5,56 +5,56 @@
   "test_size": 250,
   "test_positives": [
     {
-      "vendor": "CW RESOURCES",
-      "vendor_id": "V::CW RESOURCES"
+      "vendor": "DLT SOLUTIONS",
+      "vendor_id": "V::DLT SOLUTIONS"
+    },
+    {
+      "vendor": "VERIZON BUSINESS NETWORK SERVICES",
+      "vendor_id": "V::VERIZON BUSINESS NETWORK SERVICES"
     },
     {
       "vendor": "GENERAL DYNAMICS MISSION SYSTEMS",
       "vendor_id": "V::GENERAL DYNAMICS MISSION SYSTEMS"
     },
     {
-      "vendor": "CELEEN",
-      "vendor_id": "V::CELEEN"
-    },
-    {
-      "vendor": "MISCELLANEOUS FOREIGN AWARDEES",
-      "vendor_id": "V::MISCELLANEOUS FOREIGN AWARDEES"
-    },
-    {
       "vendor": "NORTHROP GRUMMAN SYSTEMS",
       "vendor_id": "V::NORTHROP GRUMMAN SYSTEMS"
-    },
-    {
-      "vendor": "INDUSTRIES FOR BLIND AND VISUALLY IMPAIRED",
-      "vendor_id": "V::INDUSTRIES FOR BLIND AND VISUALLY IMPAIRED"
-    },
-    {
-      "vendor": "FUDURIC & KG",
-      "vendor_id": "V::FUDURIC & KG"
-    },
-    {
-      "vendor": "DLT SOLUTIONS",
-      "vendor_id": "V::DLT SOLUTIONS"
-    },
-    {
-      "vendor": "RAYTHEON",
-      "vendor_id": "V::RAYTHEON"
-    },
-    {
-      "vendor": "B & H INTERNATIONAL",
-      "vendor_id": "V::B & H INTERNATIONAL"
     },
     {
       "vendor": "BARBARICUM",
       "vendor_id": "V::BARBARICUM"
     },
     {
+      "vendor": "FUDURIC & KG",
+      "vendor_id": "V::FUDURIC & KG"
+    },
+    {
+      "vendor": "CW RESOURCES",
+      "vendor_id": "V::CW RESOURCES"
+    },
+    {
       "vendor": "LEIDOS",
       "vendor_id": "V::LEIDOS"
     },
     {
-      "vendor": "VERIZON BUSINESS NETWORK SERVICES",
-      "vendor_id": "V::VERIZON BUSINESS NETWORK SERVICES"
+      "vendor": "RAYTHEON",
+      "vendor_id": "V::RAYTHEON"
+    },
+    {
+      "vendor": "MISCELLANEOUS FOREIGN AWARDEES",
+      "vendor_id": "V::MISCELLANEOUS FOREIGN AWARDEES"
+    },
+    {
+      "vendor": "INDUSTRIES FOR BLIND AND VISUALLY IMPAIRED",
+      "vendor_id": "V::INDUSTRIES FOR BLIND AND VISUALLY IMPAIRED"
+    },
+    {
+      "vendor": "CELEEN",
+      "vendor_id": "V::CELEEN"
+    },
+    {
+      "vendor": "B & H INTERNATIONAL",
+      "vendor_id": "V::B & H INTERNATIONAL"
     }
   ]
 }

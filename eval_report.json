@@ -12,13 +12,13 @@
     },
     "iso": {
       "recall@5": 0.3076923076923077,
-      "recall@10": 0.46153846153846156,
-      "recall@20": 0.5384615384615384,
-      "recall@50": 0.7692307692307693
+      "recall@10": 0.38461538461538464,
+      "recall@20": 0.46153846153846156,
+      "recall@50": 0.6923076923076923
     },
     "model": {
       "recall@5": 0.38461538461538464,
-      "recall@10": 0.5384615384615384,
+      "recall@10": 0.6153846153846154,
       "recall@20": 0.9230769230769231,
       "recall@50": 1.0
     }
@@ -48,40 +48,40 @@
     },
     "iso": {
       "recall@5": {
-        "mean": 0.2904869713619714,
+        "mean": 0.2733694388944389,
         "lo": 0.1111111111111111,
         "hi": 0.5
       },
       "recall@10": {
-        "mean": 0.43514308746808744,
-        "lo": 0.2222222222222222,
-        "hi": 0.6666666666666666
+        "mean": 0.35956092241092247,
+        "lo": 0.1660714285714286,
+        "hi": 0.5714285714285714
       },
       "recall@20": {
-        "mean": 0.5257260572760573,
-        "lo": 0.2857142857142857,
-        "hi": 0.7512499999999989
+        "mean": 0.48181997446997443,
+        "lo": 0.25,
+        "hi": 0.7142857142857143
       },
       "recall@50": {
-        "mean": 0.8159163697413698,
-        "lo": 0.5714285714285714,
-        "hi": 1.0
+        "mean": 0.6844701603951604,
+        "lo": 0.4444444444444444,
+        "hi": 0.8888888888888888
       }
     },
     "model": {
       "recall@5": {
-        "mean": 0.39493232878232876,
+        "mean": 0.39590415417915414,
         "lo": 0.2,
-        "hi": 0.625
+        "hi": 0.6260416666666657
       },
       "recall@10": {
-        "mean": 0.6181302197802199,
+        "mean": 0.6051466339216338,
         "lo": 0.375,
         "hi": 0.8888888888888888
       },
       "recall@20": {
-        "mean": 0.9158922716172717,
-        "lo": 0.7272727272727273,
+        "mean": 0.93206452991453,
+        "lo": 0.6666666666666666,
         "hi": 1.0
       },
       "recall@50": {
@@ -93,8 +93,8 @@
   },
   "spearman_vs_true_coverage_drop": {
     "baseline": 0.4684898543476605,
-    "iso": 0.5334222998351953,
-    "model": 0.6630122445976618
+    "iso": 0.49568121382540087,
+    "model": 0.6592053445183272
   },
   "critical_recall_at_k": {
     "baseline": {
@@ -105,7 +105,7 @@
     },
     "iso": {
       "recall@5": 0.5714285714285714,
-      "recall@10": 0.8571428571428571,
+      "recall@10": 0.7142857142857143,
       "recall@20": 1.0,
       "recall@50": 1.0
     },
@@ -144,37 +144,52 @@
     {
       "vendor": "ATLANTIC DIVING SUPPLY",
       "model_score": 1.0,
-      "iso_score": 0.9705814509527299,
+      "iso_score": 0.9344708408133262,
       "baseline_score": 0.6354180934245807,
       "coverage_drop": 0.09743589743589744,
       "split": "train",
       "top_vulnerable_naics": [
         "SPORTING AND RECREATIONAL GOODS AND SUPPLIES MERCHANT WHOLESALERS",
-        "ALL OTHER MISCELLANEOUS RETAILERS",
         "SPORTING GOODS RETAILERS",
-        "SERVICE ESTABLISHMENT EQUIPMENT AND SUPPLIES MERCHANT WHOLESALERS",
-        "MEDICINAL AND BOTANICAL MANUFACTURING"
+        "ALL OTHER MISCELLANEOUS RETAILERS",
+        "MEDICINAL AND BOTANICAL MANUFACTURING",
+        "SERVICE ESTABLISHMENT EQUIPMENT AND SUPPLIES MERCHANT WHOLESALERS"
       ]
     },
     {
       "vendor": "LOCKHEED MARTIN",
-      "model_score": 0.5721659250512725,
-      "iso_score": 0.9901340441896802,
+      "model_score": 0.5734907568686306,
+      "iso_score": 1.0,
       "baseline_score": 0.26558627871983265,
       "coverage_drop": 0.0876068376068376,
       "split": "train",
       "top_vulnerable_naics": [
         "SOFTWARE AND OTHER PRERECORDED COMPACT DISC, TAPE, AND RECORD REPRODUCING",
-        "NONFERROUS METAL (EXCEPT COPPER AND ALUMINUM) ROLLING, DRAWING, AND EXTRUDING",
         "ROLLING MILL AND OTHER METALWORKING MACHINERY MANUFACTURING",
         "RELAY AND INDUSTRIAL CONTROL MANUFACTURING",
+        "NONFERROUS METAL (EXCEPT COPPER AND ALUMINUM) ROLLING, DRAWING, AND EXTRUDING",
         "NONFERROUS FORGING"
       ]
     },
     {
+      "vendor": "NORTHROP GRUMMAN SYSTEMS",
+      "model_score": 0.5626110330400936,
+      "iso_score": 0.9949179465367886,
+      "baseline_score": 0.35644325841777635,
+      "coverage_drop": 0.12678571428571428,
+      "split": "test",
+      "top_vulnerable_naics": [
+        "ALL OTHER MISCELLANEOUS GENERAL PURPOSE MACHINERY MANUFACTURING",
+        "AUDIO AND VIDEO EQUIPMENT MANUFACTURING",
+        "ALL OTHER RUBBER PRODUCT MANUFACTURING",
+        "CUTTING TOOL AND MACHINE TOOL ACCESSORY MANUFACTURING",
+        "FLUID POWER CYLINDER AND ACTUATOR MANUFACTURING"
+      ]
+    },
+    {
       "vendor": "ECOLOGY MIR",
-      "model_score": 0.536541524200281,
-      "iso_score": 0.9431095540811928,
+      "model_score": 0.5378251864954122,
+      "iso_score": 0.8089896549595598,
       "baseline_score": 0.07294411342662727,
       "coverage_drop": 0.32142857142857145,
       "split": "train",
@@ -182,59 +197,44 @@
         "PASSENGER CAR RENTAL",
         "CONSTRUCTION, MINING, AND FORESTRY MACHINERY AND EQUIPMENT RENTAL AND LEASING",
         "CATERERS",
-        "TRUCK, UTILITY TRAILER, AND RV (RECREATIONAL VEHICLE) RENTAL AND LEASING",
-        "REMEDIATION SERVICES"
-      ]
-    },
-    {
-      "vendor": "NORTHROP GRUMMAN SYSTEMS",
-      "model_score": 0.5258442103295907,
-      "iso_score": 1.0,
-      "baseline_score": 0.35644325841777635,
-      "coverage_drop": 0.12678571428571428,
-      "split": "test",
-      "top_vulnerable_naics": [
-        "ALL OTHER MISCELLANEOUS GENERAL PURPOSE MACHINERY MANUFACTURING",
-        "ALL OTHER RUBBER PRODUCT MANUFACTURING",
-        "CUTTING TOOL AND MACHINE TOOL ACCESSORY MANUFACTURING",
-        "FLUID POWER CYLINDER AND ACTUATOR MANUFACTURING",
-        "INDUSTRIAL VALVE MANUFACTURING"
+        "REMEDIATION SERVICES",
+        "TRUCK, UTILITY TRAILER, AND RV (RECREATIONAL VEHICLE) RENTAL AND LEASING"
       ]
     },
     {
       "vendor": "RAYTHEON",
-      "model_score": 0.5066023802192916,
-      "iso_score": 0.9890415307070335,
+      "model_score": 0.5360774256360896,
+      "iso_score": 0.9862430997487147,
       "baseline_score": 0.27090816371118565,
       "coverage_drop": 0.15208333333333332,
       "split": "test",
       "top_vulnerable_naics": [
         "SPACE RESEARCH AND TECHNOLOGY",
-        "OTHER MOTOR VEHICLE PARTS MANUFACTURING",
+        "FLUID POWER VALVE AND HOSE FITTING MANUFACTURING",
         "POTTERY, CERAMICS, AND PLUMBING FIXTURE MANUFACTURING",
         "PLASTICS PIPE AND PIPE FITTING MANUFACTURING",
-        "FLUID POWER VALVE AND HOSE FITTING MANUFACTURING"
+        "OTHER MOTOR VEHICLE PARTS MANUFACTURING"
       ]
     },
     {
       "vendor": "GENERAL DYNAMICS MISSION SYSTEMS",
-      "model_score": 0.49940138177737375,
-      "iso_score": 0.9684236030580488,
+      "model_score": 0.5089344020294546,
+      "iso_score": 0.9393617367936736,
       "baseline_score": 0.257467548711623,
       "coverage_drop": 0.10493827160493827,
       "split": "test",
       "top_vulnerable_naics": [
-        "RESIDENTIAL ELECTRIC LIGHTING FIXTURE MANUFACTURING",
         "FIBER OPTIC CABLE MANUFACTURING",
-        "CARBON AND GRAPHITE PRODUCT MANUFACTURING",
+        "RESIDENTIAL ELECTRIC LIGHTING FIXTURE MANUFACTURING",
         "ALL OTHER MISCELLANEOUS CHEMICAL PRODUCT AND PREPARATION MANUFACTURING",
-        "ELECTRIC LAMP BULB AND OTHER LIGHTING EQUIPMENT MANUFACTURING"
+        "ELECTRIC LAMP BULB AND OTHER LIGHTING EQUIPMENT MANUFACTURING",
+        "CARBON AND GRAPHITE PRODUCT MANUFACTURING"
       ]
     },
     {
       "vendor": "B & H INTERNATIONAL",
-      "model_score": 0.4935680593321226,
-      "iso_score": 0.902856153631017,
+      "model_score": 0.503053546761966,
+      "iso_score": 0.7573268385331556,
       "baseline_score": 0.07051974505777323,
       "coverage_drop": 0.3076923076923077,
       "split": "test",
@@ -242,14 +242,14 @@
         "MUSICAL INSTRUMENT MANUFACTURING",
         "OTHER ELECTRONIC PARTS AND EQUIPMENT MERCHANT WHOLESALERS",
         "GROUND OR TREATED MINERAL AND EARTH MANUFACTURING",
-        "OTHER LEATHER AND ALLIED PRODUCT MANUFACTURING",
-        "FLUID POWER PUMP AND MOTOR MANUFACTURING"
+        "IRON AND STEEL PIPE AND TUBE MANUFACTURING FROM PURCHASED STEEL",
+        "ANALYTICAL LABORATORY INSTRUMENT MANUFACTURING"
       ]
     },
     {
       "vendor": "LEIDOS",
-      "model_score": 0.48610614972061933,
-      "iso_score": 0.9573211198771153,
+      "model_score": 0.5023533474570622,
+      "iso_score": 0.9316025237487328,
       "baseline_score": 0.23279007295350843,
       "coverage_drop": 0.10909090909090909,
       "split": "test",
@@ -257,14 +257,14 @@
         "TELEMARKETING BUREAUS AND OTHER CONTACT CENTERS",
         "MECHANICAL POWER TRANSMISSION EQUIPMENT MANUFACTURING",
         "COMPUTER STORAGE DEVICE MANUFACTURING",
-        "SWITCHGEAR AND SWITCHBOARD APPARATUS MANUFACTURING",
+        "OTHER COMMERCIAL AND SERVICE INDUSTRY MACHINERY MANUFACTURING",
         "NONCURRENT-CARRYING WIRING DEVICE MANUFACTURING"
       ]
     },
     {
       "vendor": "MISCELLANEOUS FOREIGN AWARDEES",
-      "model_score": 0.433747839640949,
-      "iso_score": 0.9014701847341899,
+      "model_score": 0.4589408201659405,
+      "iso_score": 0.8632059991480752,
       "baseline_score": 0.2037840235249008,
       "coverage_drop": 0.20666666666666667,
       "split": "test",
@@ -273,22 +273,22 @@
         "OFFICE EQUIPMENT MERCHANT WHOLESALERS",
         "OFFICES OF LAWYERS",
         "STATIONERY AND OFFICE SUPPLIES MERCHANT WHOLESALERS",
-        "PETROLEUM AND PETROLEUM PRODUCTS MERCHANT WHOLESALERS (EXCEPT BULK STATIONS AND TERMINALS)"
+        "ALL OTHER AUTOMOTIVE REPAIR AND MAINTENANCE"
       ]
     },
     {
-      "vendor": "AMENTUM SERVICES",
-      "model_score": 0.39400661737428627,
-      "iso_score": 0.9633999654635159,
-      "baseline_score": 0.17123182966270356,
-      "coverage_drop": 0.11904761904761904,
-      "split": "train",
+      "vendor": "BOEING",
+      "model_score": 0.3995565302410539,
+      "iso_score": 0.9758234469702801,
+      "baseline_score": 0.2920564505129495,
+      "coverage_drop": 0.0641025641025641,
+      "split": "test",
       "top_vulnerable_naics": [
-        "AIR TRAFFIC CONTROL",
-        "SOLID WASTE COLLECTION",
-        "FACILITIES SUPPORT SERVICES",
-        "MILITARY ARMORED VEHICLE, TANK, AND TANK COMPONENT MANUFACTURING",
-        "GENERAL WAREHOUSING AND STORAGE"
+        "METAL WINDOW AND DOOR MANUFACTURING",
+        "ALL OTHER MISCELLANEOUS MANUFACTURING",
+        "SATELLITE TELECOMMUNICATIONS",
+        "COMPUTER STORAGE DEVICE MANUFACTURING",
+        "HEATING EQUIPMENT (EXCEPT WARM AIR FURNACES) MANUFACTURING"
       ]
     }
   ],
@@ -561,7 +561,7 @@
       "split": "test"
     }
   ],
-  "timestamp": "2026-05-30T09:28:16.389388+00:00",
+  "timestamp": "2026-05-30T20:51:47.229404+00:00",
   "n_vendors_total": 17902,
   "candidate_pool_size": 1000
 }

@@ -13,9 +13,15 @@ class VendorScore(BaseModel):
     agency_count: int
     naics_count: int
     critical_naics_count: int
+    contract_count: int
     total_award_value: float
+    avg_award_size: float
     sole_source_ratio: float
     critical_sole_source_count: int
+    mean_pair_redundancy: float
+    naics_hhi: float
+    critical_naics_market_share: float
+    articulation_point: int
 
 
 class StressResult(BaseModel):

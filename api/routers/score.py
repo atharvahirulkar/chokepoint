@@ -39,9 +39,15 @@ def score(
             agency_count=int(row.agency_count),
             naics_count=int(row.naics_count),
             critical_naics_count=int(row.critical_naics_count),
+            contract_count=int(row.contract_count),
             total_award_value=float(row.total_award_value),
+            avg_award_size=float(row.avg_award_size),
             sole_source_ratio=float(row.sole_source_ratio),
             critical_sole_source_count=int(row.critical_sole_source_count),
+            mean_pair_redundancy=float(row.mean_pair_redundancy),
+            naics_hhi=float(row.naics_hhi),
+            critical_naics_market_share=float(row.critical_naics_market_share),
+            articulation_point=int(row.articulation_point),
         )
         for row in df.itertuples()
     ]

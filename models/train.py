@@ -36,23 +36,39 @@ ARTIFACT_DIR = Path("models/artifacts")
 RAW_FEATURE_COLS: list[str] = [
     "degree_centrality",
     "betweenness_centrality",
+    "pagerank",
+    "eigenvector_centrality",
+    "articulation_point",
     "agency_count",
     "naics_count",
     "critical_naics_count",
+    "contract_count",
     "total_award_value",
+    "avg_award_size",
     "sole_source_ratio",
     "critical_sole_source_count",
+    "mean_pair_redundancy",
     "hhi_score",
+    "naics_hhi",
+    "critical_naics_market_share",
 ]
 
 MODEL_FEATURE_COLS: list[str] = [
     "degree_centrality",
     "betweenness_centrality",
+    "pagerank",
+    "eigenvector_centrality",
+    "articulation_point",
     "log_agency_count",
     "log_naics_count",
     "log_total_award_value",
+    "log_contract_count",
+    "log_avg_award_size",
     "sole_source_ratio",
+    "mean_pair_redundancy",
     "hhi_score",
+    "naics_hhi",
+    "critical_naics_market_share",
     "sole_source_breadth",
     "footprint",
     "log_critical_naics_count",
@@ -85,6 +101,8 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     out["log_agency_count"] = np.log1p(out["agency_count"].astype(float))
     out["log_naics_count"] = np.log1p(out["naics_count"].astype(float))
     out["log_total_award_value"] = np.log1p(out["total_award_value"].astype(float))
+    out["log_contract_count"] = np.log1p(out["contract_count"].astype(float))
+    out["log_avg_award_size"] = np.log1p(out["avg_award_size"].astype(float))
     out["sole_source_breadth"] = out["sole_source_ratio"] * out["log_naics_count"]
     out["footprint"] = out["log_agency_count"] * out["log_naics_count"]
     out["log_critical_naics_count"] = np.log1p(
@@ -93,7 +111,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     out["log_critical_sole_source_count"] = np.log1p(
         out["critical_sole_source_count"].astype(float)
     )
-    # critical_breadth = sole_source pressure within the defense-critical
+    # critical_breadth = sole-source pressure within the defense-critical
     # NAICS slice. Captures "this vendor sole-sources defense-critical
     # categories" independent of total breadth.
     out["critical_breadth"] = (
