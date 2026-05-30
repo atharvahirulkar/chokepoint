@@ -1,0 +1,26 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    image: chokepoint-api
+    container_name: chokepoint-api
+    ports:
+      - "8000:8000"
+    environment:
+      PYTHONPATH: /app
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    image: chokepoint-dashboard
+    container_name: chokepoint-dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      CHOKEPOINT_API: http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped

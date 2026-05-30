@@ -1,41 +1,70 @@
-# Chokepoint
+# CHOKEPOINT
 
-**Graph ML for defense procurement resilience - find the vendors whose failure collapses mission coverage before disruption finds them.**
+**Defense Procurement Supply-Graph Intelligence.** Built solo at the SIC × DS³ × Bow Capital Defense Hackathon (May 29–31, 2026).
 
-Public defense contract data contains 180,000+ awards across hundreds of vendors, agencies, and supply categories. Nobody has built a graph over it to surface structural single points of failure. Chokepoint does.
+> Find the single vendors whose failure collapses defense mission coverage — before an adversary or disruption does.
 
 ---
 
-## What It Does
+## Problem
 
-Chokepoint ingests public USAspending contract data, constructs a vendor-agency-NAICS supply graph, and scores each vendor by how much mission coverage collapses if they disappear - through disruption, adversarial compromise, or bankruptcy.
+Defense procurement data is public but unanalyzed for systemic risk. Single vendors quietly sole-source critical NAICS categories across multiple sub-agencies. When they fail — disruption, adversarial compromise, bankruptcy — mission coverage collapses silently, and no public tool surfaces this concentration risk. The DoD Office of Industrial Base Policy currently does this analysis by hand in Excel.
 
-It goes beyond standard graph centrality by combining structural position with sole-source concentration and Herfindahl-Hirschman Index scoring. A vendor with moderate centrality but 100% sole-source supply of a critical NAICS category is more dangerous than a highly connected generalist. Centrality alone misses that.
+CHOKEPOINT ingests USAspending bulk contract data, builds the vendor-agency-NAICS supply graph, and ranks vendors by a supervised model trained on simulated counterfactual removal labels. It also restricts the analysis to NAICS in the DoD Critical Technology Areas list (aerospace, missiles, naval propulsion, microelectronics, ordnance, guidance systems).
 
 ---
 
 ## Architecture
 
 ```
-USAspending CSV
-      │
-      ▼
-pipeline/ingest.py        - normalize, deduplicate, clean
-      │
-      ▼
-pipeline/build_graph.py   - NetworkX vendor-agency-NAICS graph
-      │
-      ▼
-pipeline/features.py      - centrality, HHI, sole-source ratio per vendor
-      │
-      ▼
-models/train.py           - IsolationForest + centrality baseline
-      │
-      ▼
-models/eval.py            - synthetic failure injection, Recall@k
-      │
-      ├──▶ api/main.py         FastAPI  :8000
-      └──▶ dashboard/app.py    Streamlit :8501
+                  ┌────────────────────────────┐
+                  │  USAspending FY2026 bulk   │
+                  │  archive (4.4 GB CSV)      │
+                  └──────────────┬─────────────┘
+                                 │ stream-filter (DoD sub-agencies)
+                                 ▼
+                  ┌────────────────────────────┐
+                  │  contracts.parquet         │  ~1.1M defense rows
+                  └──────────────┬─────────────┘
+                                 ▼
+                  ┌────────────────────────────┐
+                  │  supply_graph.pkl          │  17.9k vendors, 24 agencies,
+                  │  (NetworkX MultiDiGraph)   │  747 NAICS, 68k edges
+                  └──────────────┬─────────────┘
+                                 ▼
+              ┌──────────────────┴─────────────────┐
+              ▼                                    ▼
+   ┌─────────────────────┐               ┌─────────────────────┐
+   │ vendor_features     │               │ vendor_labels       │
+   │  9 graph features   │               │  coverage_drop +    │
+   │  + critical-NAICS   │               │  critical-mode via  │
+   │                     │               │  simulated removal  │
+   └──────────┬──────────┘               └──────────┬──────────┘
+              └──────────────────┬──────────────────┘
+                                 ▼
+              ┌────────────────────────────────────┐
+              │  Train (train split only)          │
+              │  - Betweenness baseline            │
+              │  - IsolationForest (unsupervised)  │
+              │  - GradientBoosting supervised     │
+              └──────────────────┬─────────────────┘
+                                 ▼
+              ┌────────────────────────────────────┐
+              │  Eval (held-out test split)        │
+              │  Recall@k + 95% bootstrap CIs      │
+              │  Spearman vs true coverage_drop    │
+              │  Critical-NAICS recall@k           │
+              └──────────────────┬─────────────────┘
+                                 ▼
+            ┌────────────────────┴────────────────────┐
+            ▼                                         ▼
+   ┌──────────────────┐                    ┌──────────────────┐
+   │ FastAPI backend  │ ◄── HTTP/JSON ──▶  │ Streamlit UI     │
+   │ /score /stress   │                    │ leaderboard,     │
+   │ /explain /eval   │                    │ stress simulator,│
+   │ /health /metrics │                    │ explain card,    │
+   └──────────────────┘                    │ eval transparency│
+                                           └──────────────────┘
 ```
 
 ---
@@ -43,131 +72,147 @@ models/eval.py            - synthetic failure injection, Recall@k
 ## Quickstart
 
 ```bash
-git clone https://github.com/atharva/<your-repo>/chokepoint
+git clone https://github.com/atharvahirulkar/chokepoint
 cd chokepoint
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# Download USAspending data to data/raw/ first (see Data section below)
+# Drop the USAspending bulk archive CSVs under data/raw/
+# (e.g. FY2026_All_Contracts_Full_*.csv)
 
-make all        # ingest → graph → features → train → eval
-make serve      # FastAPI at localhost:8000
-make dashboard  # Streamlit at localhost:8501
+make prefilter        # stream-filter to defense sub-agencies → contracts.parquet
+make graph            # build vendor-agency-NAICS MultiDiGraph
+make features         # 9 per-vendor graph features incl. critical-NAICS
+make labels           # simulate removal → coverage_drop labels (train/test split)
+make train            # fit baseline + IsolationForest + supervised GB
+make eval             # held-out recall@k + bootstrap CIs + critical-mode
+
+make serve            # FastAPI on :8000
+make dashboard        # Streamlit on :8501
 ```
 
-Or with Docker:
+Or with Docker (after running `make all` once to produce the processed artifacts):
 
 ```bash
 docker compose up --build
 ```
 
----
-
-## Data
-
-Download from [USAspending Bulk Download](https://www.usaspending.gov/download_center/award_data_archive). Select FY2023 or FY2024, Contracts. Save CSV files to `data/raw/`.
-
-No API key required. All data is public.
+Dashboard: <http://localhost:8501> · API docs: <http://localhost:8000/docs>
 
 ---
 
-## API
+## API Reference
 
-**GET /health**
-```json
-{ "status": "ok", "vendors_loaded": 4821, "graph_nodes": 9204 }
+| Endpoint | Description |
+|---|---|
+| `GET /health` | vendors_loaded, graph_nodes, graph_edges |
+| `GET /score?limit=20&sort_by=model_score` | Top-K vendors by `model_score`, `baseline_score`, or `iso_score` |
+| `GET /stress/{vendor_name}` | Live removal simulation: coverage_drop, critical_coverage_drop, NAICS lost, top vulnerable NAICS |
+| `GET /explain/{vendor_name}` | Feature contributions (z-scored value × importance), risk tier, templated rationale |
+| `GET /eval` | Full eval_report.json (recall@k, CIs, top chokepoints, critical-mode tables) |
+| `GET /metrics` | In-memory request counter, avg latency, stress-sim count |
+
+Example:
+
+```bash
+curl "http://localhost:8000/stress/LOCKHEED%20MARTIN"
 ```
 
-**GET /score?limit=20&sort_by=model_score**
-```json
-[
-  {
-    "vendor_name": "ACME DEFENSE SYSTEMS",
-    "model_score": 0.91,
-    "baseline_score": 0.74,
-    "agency_count": 6,
-    "naics_count": 4,
-    "sole_source_ratio": 0.83
-  }
-]
-```
-
-**GET /stress/{vendor_name}**
 ```json
 {
-  "vendor_name": "ACME DEFENSE SYSTEMS",
-  "coverage_drop": 0.47,
-  "naics_affected": 3,
-  "agencies_impacted": 4,
-  "top_vulnerable_naics": ["336411 - Aircraft Manufacturing", "...]
-}
-```
-
-**GET /explain/{vendor_name}**
-```json
-{
-  "vendor_name": "ACME DEFENSE SYSTEMS",
-  "model_score": 0.91,
-  "risk_tier": "HIGH",
-  "explanation_text": "Elevated risk driven by high sole-source ratio and concentrated agency dependency.",
-  "feature_contributions": { "sole_source_ratio": 0.41, "hhi_score": 0.29, ... }
+  "vendor_name": "LOCKHEED MARTIN",
+  "coverage_drop": 0.0876,
+  "critical_coverage_drop": 0.010,
+  "naics_affected": 16,
+  "critical_naics_affected": 1,
+  "agencies_impacted": 9,
+  "pairs_served": 468,
+  "pairs_lost": 41,
+  "top_vulnerable_naics": [
+    "SOFTWARE AND OTHER PRERECORDED COMPACT DISC, TAPE, AND RECORD REPRODUCING",
+    "RELAY AND INDUSTRIAL CONTROL MANUFACTURING"
+  ]
 }
 ```
 
 ---
 
-## Evaluation
+## Eval Methodology
 
-No public ground truth exists for real procurement disruptions. We evaluate using synthetic failure injection:
+There is no public ground truth for which defense vendors are systemic chokepoints. We generate labels via **simulated counterfactual removal**: for each vendor in a candidate pool (top 1000 by graph footprint), remove the vendor and count the fraction of `(agency, NAICS)` pairs it served that lose **all** suppliers. This is the same framework as **N-1 contingency analysis** in power-systems engineering and **DebtRank / SinkRank** for financial systemic risk.
 
-1. Identify top 10 vendors by betweenness centrality as ground truth positives
-2. Sample 10 mid-tier vendors as negatives
-3. Simulate removal of each positive vendor from a graph copy
-4. Measure coverage drop: fraction of NAICS codes losing all vendor coverage for at least one connected agency
-5. Compute Recall@k: how many true positives appear in the model's top-k ranked vendors
+The pool is split 75/25 (seed 42); the supervised model is trained on the train split only and evaluated on the held-out test split.
 
-| Metric | Model (IsolationForest) | Baseline (Centrality) |
-|--------|------------------------|----------------------|
-| Recall@5 | - | - |
-| Recall@10 | - | - |
-| Recall@20 | - | - |
+### Held-out test results (n=250 test vendors, 13 positives)
 
-*Populated automatically after running `make eval`. Results written to `eval_report.json`.*
+| Ranker | R@5 | R@10 (95% CI) | R@20 (95% CI) | R@50 |
+|---|---:|:---:|:---:|---:|
+| Betweenness baseline | 0.23 | 0.39 [0.17, 0.62] | 0.54 [0.29, 0.75] | 0.69 |
+| IsolationForest | 0.31 | 0.46 [0.22, 0.67] | 0.54 [0.29, 0.75] | 0.77 |
+| **Supervised GB** | **0.39** | **0.54 [0.38, 0.89]** | **0.92 [0.73, 1.00]** | **1.00** |
+
+CIs are 1000-iter percentile bootstrap. Spearman rank correlation vs true `coverage_drop` on the test split: baseline **0.47** · iso **0.53** · model **0.66**.
+
+### Critical-NAICS mode (n=7 critical positives in test)
+
+Vendors are re-scored against the subset of NAICS in the **DoD Critical Technology Areas** list (aerospace, missile, naval propulsion, microelectronics, ordnance, guidance). Top critical-NAICS chokepoints in the candidate pool include **Ecology MIR**, **B & H International**, **Peck & Hale**, **Booz Allen Hamilton**, and **SAIC**.
+
+### Feature importance (supervised model)
+
+| Feature | Importance |
+|---|---:|
+| `sole_source_breadth` = sole_source_ratio × log(NAICS) | 35% |
+| `critical_breadth` = sole_source_ratio × log(critical_NAICS) | 34% |
+| `footprint` = log(agencies) × log(NAICS) | 13% |
+| Raw centrality, log-counts, HHI | <5% each |
+
+Three engineered interaction features carry 82% of the signal. The model is explainable, not a black box.
 
 ---
 
 ## Limitations
 
-These are real and worth understanding:
-
-- **Vendor name normalization is imperfect.** USAspending uses raw vendor strings. The same company appears under multiple name variants across fiscal years. CAGE codes would solve this but are not always present in bulk exports.
-- **Synthetic eval is a proxy.** Ground truth for real chokepoints does not exist publicly. Recall@k measures model ranking against centrality-derived positives, not against actual disruption events.
-- **IsolationForest contamination is a hyperparameter.** The 0.05 default flags ~5% of vendors as anomalous. Domain calibration with procurement analysts would be required in production.
-- **Subsidiaries and parent companies are invisible.** A vendor flagged as low-risk may be a subsidiary of a high-risk parent. The model operates on contract-level vendor strings only.
-- **Static snapshot.** The graph reflects a single fiscal year. Temporal drift, new entrants, and vendor consolidation are not modeled.
+- **Vendor identity is fragile.** The pipeline uses `recipient_name` with corporate-suffix stripping. Subsidiaries, name changes, and DBA's are not deduplicated. A production version must key on CAGE codes or UEI.
+- **Synthetic eval is a proxy.** We have no ground truth for real disruption events. The simulation captures *structural* chokepoint-ness, not realized failures. 100% recall@50 on simulated labels does not mean 100% recall on real-world failures.
+- **Single fiscal year.** Built on FY2026 contracts only (May 2026 bulk archive). Multi-year analysis would smooth over award-cycle effects and reveal persistent chokepoints.
+- **Bipartite graph, no agency↔NAICS edges.** Centrality measures are computed on the undirected projection because the directed bipartite structure has no shortest paths between agencies and NAICS.
+- **Small positive set.** 13 test positives and 7 critical positives — recall numbers have wide bootstrap CIs. Run on multi-year data to tighten them.
+- **Sub-agency rollup.** Award-line `awarding_agency_name` is almost always "DEPARTMENT OF DEFENSE"; the pipeline rolls up to `awarding_sub_agency_name` (Army, Navy, AF, DLA, ...). Sub-sub-agency (program office) structure is lost.
 
 ---
 
 ## What Production Would Require
 
-- SAM.gov real-time API integration for live contract ingestion
-- Neo4j or similar graph database instead of in-memory NetworkX
-- CAGE code as the canonical vendor identifier
-- Human-in-the-loop validation with procurement analysts to establish real ground truth
-- Temporal graph modeling to detect vendor consolidation trends
+- **CAGE/UEI as primary key**, not normalized name strings.
+- **Multi-year ingestion** with award lifecycle handling (modifications, cancellations).
+- **Real-time SAM.gov + USAspending API** integration instead of bulk archive downloads.
+- **Graph database** (Neo4j / Memgraph) replacing pickled NetworkX.
+- **Human-in-the-loop analyst feedback** — let procurement officers flag false positives and feed corrections back into training.
+- **NAICS criticality** sourced from authoritative DoD/CTA mappings instead of a hand-curated list.
+- **Multi-objective scoring** — combine chokepoint score with vendor financial health (D&B / Bloomberg) and adversarial-exposure signals.
 
 ---
 
-## Stack
+## Layout
 
-Python, pandas, NetworkX, scikit-learn, FastAPI, Streamlit, MLflow, Plotly, Docker
+```
+chokepoint/
+├── pipeline/           # ingest, prefilter, graph, features, labels, critical_naics
+├── models/             # train (baseline + iso + supervised GB), eval (recall@k + CIs)
+├── api/                # FastAPI: routers/score, stress, explain + state, schemas
+├── dashboard/          # Streamlit app
+├── data/processed/     # parquets (gitignored)
+├── models/artifacts/   # joblib (gitignored)
+├── eval_report.json    # latest eval output
+├── docker-compose.yml
+├── Dockerfile.api
+├── Dockerfile.dashboard
+├── Makefile
+└── requirements.txt
+```
 
 ---
 
 ## License
 
-MIT
-
----
-
-*Built at the SIC x DS3 x Bow Capital Defense Hackathon, UCSD, May 2026.*
+MIT.
