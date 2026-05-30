@@ -1,0 +1,567 @@
+{
+  "ground_truth_rule": "Held-out test split (size=250). Positives = coverage_drop >= pool quantile 0.75 (threshold=0.0974).",
+  "n_test_positives": 13,
+  "n_test_critical_positives": 7,
+  "n_test": 250,
+  "recall_at_k": {
+    "baseline": {
+      "recall@5": 0.23076923076923078,
+      "recall@10": 0.38461538461538464,
+      "recall@20": 0.5384615384615384,
+      "recall@50": 0.6923076923076923
+    },
+    "iso": {
+      "recall@5": 0.3076923076923077,
+      "recall@10": 0.46153846153846156,
+      "recall@20": 0.5384615384615384,
+      "recall@50": 0.7692307692307693
+    },
+    "model": {
+      "recall@5": 0.38461538461538464,
+      "recall@10": 0.5384615384615384,
+      "recall@20": 0.9230769230769231,
+      "recall@50": 1.0
+    }
+  },
+  "recall_at_k_95ci": {
+    "baseline": {
+      "recall@5": {
+        "mean": 0.22487011322011322,
+        "lo": 0.0,
+        "hi": 0.42857142857142855
+      },
+      "recall@10": {
+        "mean": 0.3917035991785992,
+        "lo": 0.16666666666666666,
+        "hi": 0.625
+      },
+      "recall@20": {
+        "mean": 0.527768697968698,
+        "lo": 0.2857142857142857,
+        "hi": 0.75
+      },
+      "recall@50": {
+        "mean": 0.6665418192918192,
+        "lo": 0.444047619047619,
+        "hi": 0.875
+      }
+    },
+    "iso": {
+      "recall@5": {
+        "mean": 0.2904869713619714,
+        "lo": 0.1111111111111111,
+        "hi": 0.5
+      },
+      "recall@10": {
+        "mean": 0.43514308746808744,
+        "lo": 0.2222222222222222,
+        "hi": 0.6666666666666666
+      },
+      "recall@20": {
+        "mean": 0.5257260572760573,
+        "lo": 0.2857142857142857,
+        "hi": 0.7512499999999989
+      },
+      "recall@50": {
+        "mean": 0.8159163697413698,
+        "lo": 0.5714285714285714,
+        "hi": 1.0
+      }
+    },
+    "model": {
+      "recall@5": {
+        "mean": 0.39493232878232876,
+        "lo": 0.2,
+        "hi": 0.625
+      },
+      "recall@10": {
+        "mean": 0.6181302197802199,
+        "lo": 0.375,
+        "hi": 0.8888888888888888
+      },
+      "recall@20": {
+        "mean": 0.9158922716172717,
+        "lo": 0.7272727272727273,
+        "hi": 1.0
+      },
+      "recall@50": {
+        "mean": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      }
+    }
+  },
+  "spearman_vs_true_coverage_drop": {
+    "baseline": 0.4684898543476605,
+    "iso": 0.5334222998351953,
+    "model": 0.6630122445976618
+  },
+  "critical_recall_at_k": {
+    "baseline": {
+      "recall@5": 0.5714285714285714,
+      "recall@10": 0.5714285714285714,
+      "recall@20": 0.8571428571428571,
+      "recall@50": 1.0
+    },
+    "iso": {
+      "recall@5": 0.5714285714285714,
+      "recall@10": 0.8571428571428571,
+      "recall@20": 1.0,
+      "recall@50": 1.0
+    },
+    "model": {
+      "recall@5": 0.5714285714285714,
+      "recall@10": 0.7142857142857143,
+      "recall@20": 1.0,
+      "recall@50": 1.0
+    }
+  },
+  "critical_naics_definition": {
+    "n_codes": 18,
+    "codes": {
+      "336411": "Aircraft Manufacturing",
+      "336412": "Aircraft Engine and Engine Parts Manufacturing",
+      "336413": "Other Aircraft Parts and Auxiliary Equipment Manufacturing",
+      "336414": "Guided Missile and Space Vehicle Manufacturing",
+      "336415": "Guided Missile and Space Vehicle Propulsion Unit Mfg",
+      "336419": "Other Guided Missile and Space Vehicle Parts Mfg",
+      "336992": "Military Armored Vehicle, Tank, and Tank Component Mfg",
+      "336611": "Ship Building and Repairing",
+      "333611": "Turbine and Turbine Generator Set Units Manufacturing",
+      "332992": "Small Arms Ammunition Manufacturing",
+      "332993": "Ammunition (except Small Arms) Manufacturing",
+      "332994": "Small Arms, Ordnance, and Ordnance Accessories Mfg",
+      "332995": "Other Ordnance and Accessories Manufacturing",
+      "334413": "Semiconductor and Related Device Manufacturing",
+      "334418": "Printed Circuit Assembly (Electronic Assembly) Mfg",
+      "334511": "Search, Detection, Navigation, Guidance, Aeronautical Systems Mfg",
+      "334515": "Instrument Mfg for Measuring and Testing Electricity",
+      "325920": "Explosives Manufacturing"
+    },
+    "provenance": "DoD USD(R&E) Critical Technology Areas (2022/2023) + DPA Title III categories + NDAA 2022 Sec. 855"
+  },
+  "top_chokepoints": [
+    {
+      "vendor": "ATLANTIC DIVING SUPPLY",
+      "model_score": 1.0,
+      "iso_score": 0.9705814509527299,
+      "baseline_score": 0.6354180934245807,
+      "coverage_drop": 0.09743589743589744,
+      "split": "train",
+      "top_vulnerable_naics": [
+        "SPORTING AND RECREATIONAL GOODS AND SUPPLIES MERCHANT WHOLESALERS",
+        "ALL OTHER MISCELLANEOUS RETAILERS",
+        "SPORTING GOODS RETAILERS",
+        "SERVICE ESTABLISHMENT EQUIPMENT AND SUPPLIES MERCHANT WHOLESALERS",
+        "MEDICINAL AND BOTANICAL MANUFACTURING"
+      ]
+    },
+    {
+      "vendor": "LOCKHEED MARTIN",
+      "model_score": 0.5721659250512725,
+      "iso_score": 0.9901340441896802,
+      "baseline_score": 0.26558627871983265,
+      "coverage_drop": 0.0876068376068376,
+      "split": "train",
+      "top_vulnerable_naics": [
+        "SOFTWARE AND OTHER PRERECORDED COMPACT DISC, TAPE, AND RECORD REPRODUCING",
+        "NONFERROUS METAL (EXCEPT COPPER AND ALUMINUM) ROLLING, DRAWING, AND EXTRUDING",
+        "ROLLING MILL AND OTHER METALWORKING MACHINERY MANUFACTURING",
+        "RELAY AND INDUSTRIAL CONTROL MANUFACTURING",
+        "NONFERROUS FORGING"
+      ]
+    },
+    {
+      "vendor": "ECOLOGY MIR",
+      "model_score": 0.536541524200281,
+      "iso_score": 0.9431095540811928,
+      "baseline_score": 0.07294411342662727,
+      "coverage_drop": 0.32142857142857145,
+      "split": "train",
+      "top_vulnerable_naics": [
+        "PASSENGER CAR RENTAL",
+        "CONSTRUCTION, MINING, AND FORESTRY MACHINERY AND EQUIPMENT RENTAL AND LEASING",
+        "CATERERS",
+        "TRUCK, UTILITY TRAILER, AND RV (RECREATIONAL VEHICLE) RENTAL AND LEASING",
+        "REMEDIATION SERVICES"
+      ]
+    },
+    {
+      "vendor": "NORTHROP GRUMMAN SYSTEMS",
+      "model_score": 0.5258442103295907,
+      "iso_score": 1.0,
+      "baseline_score": 0.35644325841777635,
+      "coverage_drop": 0.12678571428571428,
+      "split": "test",
+      "top_vulnerable_naics": [
+        "ALL OTHER MISCELLANEOUS GENERAL PURPOSE MACHINERY MANUFACTURING",
+        "ALL OTHER RUBBER PRODUCT MANUFACTURING",
+        "CUTTING TOOL AND MACHINE TOOL ACCESSORY MANUFACTURING",
+        "FLUID POWER CYLINDER AND ACTUATOR MANUFACTURING",
+        "INDUSTRIAL VALVE MANUFACTURING"
+      ]
+    },
+    {
+      "vendor": "RAYTHEON",
+      "model_score": 0.5066023802192916,
+      "iso_score": 0.9890415307070335,
+      "baseline_score": 0.27090816371118565,
+      "coverage_drop": 0.15208333333333332,
+      "split": "test",
+      "top_vulnerable_naics": [
+        "SPACE RESEARCH AND TECHNOLOGY",
+        "OTHER MOTOR VEHICLE PARTS MANUFACTURING",
+        "POTTERY, CERAMICS, AND PLUMBING FIXTURE MANUFACTURING",
+        "PLASTICS PIPE AND PIPE FITTING MANUFACTURING",
+        "FLUID POWER VALVE AND HOSE FITTING MANUFACTURING"
+      ]
+    },
+    {
+      "vendor": "GENERAL DYNAMICS MISSION SYSTEMS",
+      "model_score": 0.49940138177737375,
+      "iso_score": 0.9684236030580488,
+      "baseline_score": 0.257467548711623,
+      "coverage_drop": 0.10493827160493827,
+      "split": "test",
+      "top_vulnerable_naics": [
+        "RESIDENTIAL ELECTRIC LIGHTING FIXTURE MANUFACTURING",
+        "FIBER OPTIC CABLE MANUFACTURING",
+        "CARBON AND GRAPHITE PRODUCT MANUFACTURING",
+        "ALL OTHER MISCELLANEOUS CHEMICAL PRODUCT AND PREPARATION MANUFACTURING",
+        "ELECTRIC LAMP BULB AND OTHER LIGHTING EQUIPMENT MANUFACTURING"
+      ]
+    },
+    {
+      "vendor": "B & H INTERNATIONAL",
+      "model_score": 0.4935680593321226,
+      "iso_score": 0.902856153631017,
+      "baseline_score": 0.07051974505777323,
+      "coverage_drop": 0.3076923076923077,
+      "split": "test",
+      "top_vulnerable_naics": [
+        "MUSICAL INSTRUMENT MANUFACTURING",
+        "OTHER ELECTRONIC PARTS AND EQUIPMENT MERCHANT WHOLESALERS",
+        "GROUND OR TREATED MINERAL AND EARTH MANUFACTURING",
+        "OTHER LEATHER AND ALLIED PRODUCT MANUFACTURING",
+        "FLUID POWER PUMP AND MOTOR MANUFACTURING"
+      ]
+    },
+    {
+      "vendor": "LEIDOS",
+      "model_score": 0.48610614972061933,
+      "iso_score": 0.9573211198771153,
+      "baseline_score": 0.23279007295350843,
+      "coverage_drop": 0.10909090909090909,
+      "split": "test",
+      "top_vulnerable_naics": [
+        "TELEMARKETING BUREAUS AND OTHER CONTACT CENTERS",
+        "MECHANICAL POWER TRANSMISSION EQUIPMENT MANUFACTURING",
+        "COMPUTER STORAGE DEVICE MANUFACTURING",
+        "SWITCHGEAR AND SWITCHBOARD APPARATUS MANUFACTURING",
+        "NONCURRENT-CARRYING WIRING DEVICE MANUFACTURING"
+      ]
+    },
+    {
+      "vendor": "MISCELLANEOUS FOREIGN AWARDEES",
+      "model_score": 0.433747839640949,
+      "iso_score": 0.9014701847341899,
+      "baseline_score": 0.2037840235249008,
+      "coverage_drop": 0.20666666666666667,
+      "split": "test",
+      "top_vulnerable_naics": [
+        "GENERAL FREIGHT TRUCKING, LONG-DISTANCE, LESS THAN TRUCKLOAD",
+        "OFFICE EQUIPMENT MERCHANT WHOLESALERS",
+        "OFFICES OF LAWYERS",
+        "STATIONERY AND OFFICE SUPPLIES MERCHANT WHOLESALERS",
+        "PETROLEUM AND PETROLEUM PRODUCTS MERCHANT WHOLESALERS (EXCEPT BULK STATIONS AND TERMINALS)"
+      ]
+    },
+    {
+      "vendor": "AMENTUM SERVICES",
+      "model_score": 0.39400661737428627,
+      "iso_score": 0.9633999654635159,
+      "baseline_score": 0.17123182966270356,
+      "coverage_drop": 0.11904761904761904,
+      "split": "train",
+      "top_vulnerable_naics": [
+        "AIR TRAFFIC CONTROL",
+        "SOLID WASTE COLLECTION",
+        "FACILITIES SUPPORT SERVICES",
+        "MILITARY ARMORED VEHICLE, TANK, AND TANK COMPONENT MANUFACTURING",
+        "GENERAL WAREHOUSING AND STORAGE"
+      ]
+    }
+  ],
+  "ground_truth_top_20": [
+    {
+      "vendor": "AROCEP FEDERAL",
+      "coverage_drop": 0.6,
+      "naics_affected": 1,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "train"
+    },
+    {
+      "vendor": "NATIONAL INDUSTRIES FOR BLIND",
+      "coverage_drop": 0.4,
+      "naics_affected": 11,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "train"
+    },
+    {
+      "vendor": "ECOLOGY MIR",
+      "coverage_drop": 0.32142857142857145,
+      "naics_affected": 15,
+      "critical_coverage_drop": 0.2857142857142857,
+      "critical_naics_affected": 1,
+      "split": "train"
+    },
+    {
+      "vendor": "B & H INTERNATIONAL",
+      "coverage_drop": 0.3076923076923077,
+      "naics_affected": 12,
+      "critical_coverage_drop": 0.25,
+      "critical_naics_affected": 1,
+      "split": "test"
+    },
+    {
+      "vendor": "GOLDBELT FRONTIER",
+      "coverage_drop": 0.2916666666666667,
+      "naics_affected": 3,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "train"
+    },
+    {
+      "vendor": "VERIZON BUSINESS NETWORK SERVICES",
+      "coverage_drop": 0.2916666666666667,
+      "naics_affected": 5,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "test"
+    },
+    {
+      "vendor": "DLT SOLUTIONS",
+      "coverage_drop": 0.25,
+      "naics_affected": 1,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "test"
+    },
+    {
+      "vendor": "PECK & HALE",
+      "coverage_drop": 0.25,
+      "naics_affected": 6,
+      "critical_coverage_drop": 0.25,
+      "critical_naics_affected": 1,
+      "split": "train"
+    },
+    {
+      "vendor": "COMCAST GOVERNMENT SERVICES",
+      "coverage_drop": 0.25,
+      "naics_affected": 6,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "train"
+    },
+    {
+      "vendor": "EAGLE INTEGRATED SERVICES",
+      "coverage_drop": 0.25,
+      "naics_affected": 5,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "train"
+    },
+    {
+      "vendor": "MSC INDUSTRIAL DIRECT",
+      "coverage_drop": 0.24,
+      "naics_affected": 5,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "train"
+    },
+    {
+      "vendor": "BARBARICUM",
+      "coverage_drop": 0.24,
+      "naics_affected": 2,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "test"
+    },
+    {
+      "vendor": "NEW TECH SOLUTIONS",
+      "coverage_drop": 0.2222222222222222,
+      "naics_affected": 5,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "train"
+    },
+    {
+      "vendor": "COMMUNICATIONS PROFESSIONALS",
+      "coverage_drop": 0.20833333333333334,
+      "naics_affected": 3,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "train"
+    },
+    {
+      "vendor": "MISCELLANEOUS FOREIGN AWARDEES",
+      "coverage_drop": 0.20666666666666667,
+      "naics_affected": 30,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "test"
+    },
+    {
+      "vendor": "ENTERPRISE TECHNOLOGY SOLUTIONS",
+      "coverage_drop": 0.18571428571428572,
+      "naics_affected": 5,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "train"
+    },
+    {
+      "vendor": "FUDURIC & KG",
+      "coverage_drop": 0.18518518518518517,
+      "naics_affected": 5,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "test"
+    },
+    {
+      "vendor": "AMERICAN ENGINEERING",
+      "coverage_drop": 0.15384615384615385,
+      "naics_affected": 8,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "train"
+    },
+    {
+      "vendor": "RAYTHEON",
+      "coverage_drop": 0.15208333333333332,
+      "naics_affected": 32,
+      "critical_coverage_drop": 0.07142857142857142,
+      "critical_naics_affected": 6,
+      "split": "test"
+    },
+    {
+      "vendor": "CW RESOURCES",
+      "coverage_drop": 0.14285714285714285,
+      "naics_affected": 5,
+      "critical_coverage_drop": 0.0,
+      "critical_naics_affected": 0,
+      "split": "test"
+    }
+  ],
+  "critical_ground_truth_top": [
+    {
+      "vendor": "ECOLOGY MIR",
+      "critical_coverage_drop": 0.2857142857142857,
+      "critical_naics_affected": 1,
+      "coverage_drop": 0.32142857142857145,
+      "split": "train"
+    },
+    {
+      "vendor": "B & H INTERNATIONAL",
+      "critical_coverage_drop": 0.25,
+      "critical_naics_affected": 1,
+      "coverage_drop": 0.3076923076923077,
+      "split": "test"
+    },
+    {
+      "vendor": "PECK & HALE",
+      "critical_coverage_drop": 0.25,
+      "critical_naics_affected": 1,
+      "coverage_drop": 0.25,
+      "split": "train"
+    },
+    {
+      "vendor": "BOOZ ALLEN HAMILTON",
+      "critical_coverage_drop": 0.18181818181818182,
+      "critical_naics_affected": 1,
+      "coverage_drop": 0.06818181818181818,
+      "split": "test"
+    },
+    {
+      "vendor": "SCIENCE APPLICATIONS INTERNATIONAL",
+      "critical_coverage_drop": 0.16666666666666666,
+      "critical_naics_affected": 3,
+      "coverage_drop": 0.09178743961352658,
+      "split": "train"
+    },
+    {
+      "vendor": "VERTEX AEROSPACE",
+      "critical_coverage_drop": 0.14285714285714285,
+      "critical_naics_affected": 1,
+      "coverage_drop": 0.023809523809523808,
+      "split": "train"
+    },
+    {
+      "vendor": "ACCENTURE FEDERAL SERVICES",
+      "critical_coverage_drop": 0.125,
+      "critical_naics_affected": 1,
+      "coverage_drop": 0.08333333333333333,
+      "split": "test"
+    },
+    {
+      "vendor": "LINMARR ASSOCIATES",
+      "critical_coverage_drop": 0.1,
+      "critical_naics_affected": 1,
+      "coverage_drop": 0.02631578947368421,
+      "split": "train"
+    },
+    {
+      "vendor": "INTERNATIONAL TELEVISION",
+      "critical_coverage_drop": 0.08333333333333333,
+      "critical_naics_affected": 1,
+      "coverage_drop": 0.06896551724137931,
+      "split": "train"
+    },
+    {
+      "vendor": "ROCKWELL COLLINS",
+      "critical_coverage_drop": 0.08163265306122448,
+      "critical_naics_affected": 3,
+      "coverage_drop": 0.0663265306122449,
+      "split": "train"
+    },
+    {
+      "vendor": "RAYTHEON",
+      "critical_coverage_drop": 0.07142857142857142,
+      "critical_naics_affected": 6,
+      "coverage_drop": 0.15208333333333332,
+      "split": "test"
+    },
+    {
+      "vendor": "AMENTUM SERVICES",
+      "critical_coverage_drop": 0.07142857142857142,
+      "critical_naics_affected": 1,
+      "coverage_drop": 0.11904761904761904,
+      "split": "train"
+    },
+    {
+      "vendor": "DRS NETWORK & IMAGING SYSTEMS",
+      "critical_coverage_drop": 0.047619047619047616,
+      "critical_naics_affected": 1,
+      "coverage_drop": 0.047619047619047616,
+      "split": "train"
+    },
+    {
+      "vendor": "NORTHROP GRUMMAN SYSTEMS",
+      "critical_coverage_drop": 0.045454545454545456,
+      "critical_naics_affected": 4,
+      "coverage_drop": 0.12678571428571428,
+      "split": "test"
+    },
+    {
+      "vendor": "BOEING",
+      "critical_coverage_drop": 0.03333333333333333,
+      "critical_naics_affected": 2,
+      "coverage_drop": 0.0641025641025641,
+      "split": "test"
+    }
+  ],
+  "timestamp": "2026-05-30T09:28:16.389388+00:00",
+  "n_vendors_total": 17902,
+  "candidate_pool_size": 1000
+}

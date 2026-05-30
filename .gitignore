@@ -6,6 +6,7 @@ __pycache__/
 *.pyc
 .DS_Store
 mlruns/
+mlflow.db
 *.egg-info/
 .pytest_cache/
 .env

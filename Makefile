@@ -1,4 +1,4 @@
-.PHONY: prefilter ingest graph features train eval serve dashboard all clean
+.PHONY: prefilter ingest graph features labels train eval serve dashboard all clean
 
 prefilter:
 	python -m pipeline.prefilter
@@ -7,16 +7,19 @@ ingest:
 	python -m pipeline.ingest
 
 graph:
-	python pipeline/build_graph.py
+	python -m pipeline.build_graph
 
 features:
-	python pipeline/features.py
+	python -m pipeline.features
+
+labels:
+	python -m pipeline.labels
 
 train:
-	python models/train.py
+	python -m models.train
 
 eval:
-	python models/eval.py
+	python -m models.eval
 
 serve:
 	uvicorn api.main:app --reload --port 8000
@@ -24,7 +27,7 @@ serve:
 dashboard:
 	streamlit run dashboard/app.py
 
-all: ingest graph features train eval
+all: ingest graph features labels train eval
 
 clean:
-	rm -rf data/processed/* models/artifacts/*
+	rm -rf data/processed/* models/artifacts/* eval_report.json

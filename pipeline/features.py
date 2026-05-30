@@ -21,6 +21,8 @@ from pathlib import Path
 import networkx as nx
 import pandas as pd
 
+from pipeline.critical_naics import critical_naics_id
+
 GRAPH_PATH = Path("data/processed/supply_graph.pkl")
 OUT_PATH = Path("data/processed/vendor_features.parquet")
 
@@ -110,6 +112,7 @@ def compute_features(g: nx.MultiDiGraph) -> pd.DataFrame:
         name = g.nodes[vid]["name"]
         agencies: dict[str, float] = {}
         naics: set[str] = set()
+        critical_naics: set[str] = set()
         total_value = 0.0
 
         for _, target, d in g.out_edges(vid, data=True):
@@ -120,11 +123,16 @@ def compute_features(g: nx.MultiDiGraph) -> pd.DataFrame:
                 total_value += w
             elif et == "VENDOR_NAICS":
                 naics.add(target)
+                if critical_naics_id(target):
+                    critical_naics.add(target)
 
         # sole-source: of all (agency, naics) pairs this vendor serves, how
-        # many have only this vendor as supplier?
+        # many have only this vendor as supplier? Also track the count of
+        # *critical*-NAICS pairs that are sole-sourced — this is the
+        # national-security signal independent of the headline ratio.
         pair_total = 0
         pair_sole = 0
+        critical_pair_sole = 0
         for a in agencies:
             for n in naics:
                 holders = coverage.get((a, n))
@@ -133,6 +141,8 @@ def compute_features(g: nx.MultiDiGraph) -> pd.DataFrame:
                 pair_total += 1
                 if len(holders) == 1 and vid in holders:
                     pair_sole += 1
+                    if critical_naics_id(n):
+                        critical_pair_sole += 1
         sole_source_ratio = (pair_sole / pair_total) if pair_total else 0.0
 
         # HHI over agency shares of award value
@@ -150,8 +160,10 @@ def compute_features(g: nx.MultiDiGraph) -> pd.DataFrame:
                 "betweenness_centrality": float(btw_cent.get(vid, 0.0)),
                 "agency_count": len(agencies),
                 "naics_count": len(naics),
+                "critical_naics_count": len(critical_naics),
                 "total_award_value": total_value,
                 "sole_source_ratio": sole_source_ratio,
+                "critical_sole_source_count": critical_pair_sole,
                 "hhi_score": hhi,
             }
         )
@@ -173,8 +185,10 @@ def main() -> None:
                 "betweenness_centrality",
                 "agency_count",
                 "naics_count",
+                "critical_naics_count",
                 "total_award_value",
                 "sole_source_ratio",
+                "critical_sole_source_count",
                 "hhi_score",
             ]
         ].describe(),
