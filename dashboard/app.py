@@ -661,9 +661,8 @@ if heatmap_data and heatmap_data.get("agencies"):
             zmin=1, zmax=10,
             hovertemplate="<b>%{y}</b><br>%{x}<br>suppliers: %{z:.0f}<extra></extra>",
             colorbar=dict(
-                title="Suppliers",
+                title=dict(text="Suppliers", font=dict(color="#d8e2ec")),
                 tickfont=dict(color="#d8e2ec"),
-                titlefont=dict(color="#d8e2ec"),
             ),
             xgap=2, ygap=2,
         )
