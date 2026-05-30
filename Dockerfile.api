@@ -20,6 +20,7 @@ COPY pipeline/ pipeline/
 COPY models/ models/
 COPY api/ api/
 COPY data/processed/ data/processed/
+COPY data/synthetic/ data/synthetic/
 COPY eval_report.json ./eval_report.json
 
 EXPOSE 8000

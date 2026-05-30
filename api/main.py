@@ -105,6 +105,17 @@ def eval_report() -> dict:
     return state.eval_report
 
 
+@app.get("/events")
+def event_validation() -> dict:
+    """Predictions vs reality: known real-world disruption events with model ranks."""
+    import json
+    from pathlib import Path
+    p = Path("data/processed/event_validation.json")
+    if p.exists():
+        return json.loads(p.read_text())
+    return {"events": [], "n_events": 0, "n_found": 0, "summary": {}, "n_vendors": 0}
+
+
 @app.get("/heatmap/critical")
 def critical_heatmap() -> dict:
     """Agency × critical-NAICS supplier-count matrix.

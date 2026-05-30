@@ -21,6 +21,9 @@ train:
 eval:
 	python -m models.eval
 
+events:
+	python -m pipeline.event_validation
+
 serve:
 	uvicorn api.main:app --reload --port 8000
 

@@ -350,6 +350,73 @@ if not leaderboard.empty:
 
 
 # ---------------------------------------------------------------------------
+# SECTION 1.5 — Predictions vs reality
+# ---------------------------------------------------------------------------
+st.markdown('<div class="cp-section">// 01-A · PREDICTIONS vs REALITY</div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="cp-section-cap">External validation: ten publicly-documented defense supply-chain disruption events (2022-2024). For each, where does the named vendor rank in our model — out of 49,842 — <em>without</em> the news telling us?</div>',
+    unsafe_allow_html=True,
+)
+
+events_data = api_get("/events") or {}
+events = events_data.get("events", [])
+if events:
+    summary = events_data.get("summary", {})
+    n_found = events_data.get("n_found", 0)
+    n_vendors = events_data.get("n_vendors", 0)
+
+    cs1, cs2, cs3, cs4 = st.columns(4)
+    cs1.metric("Events matched", f"{n_found}/{len(events)}")
+    cs2.metric("In top 1%", f"{summary.get('in_top_1_pct', 0)}/{n_found}")
+    cs3.metric("In top 5%", f"{summary.get('in_top_5_pct', 0)}/{n_found}")
+    cs4.metric("Median %ile", f"{summary.get('median_percentile', 0):.1f}%")
+
+    rows = []
+    for ev in events:
+        if not ev.get("found"):
+            rows.append(
+                {
+                    "Event": ev["event"],
+                    "Matched Vendor": "—",
+                    "Year": ev["year"],
+                    "Model Rank": "—",
+                    "Percentile": "—",
+                    "Verdict": "❌ Not found",
+                }
+            )
+            continue
+        pct = ev["percentile_model"]
+        if pct >= 99.0:
+            verdict = "🎯 Top 1%"
+        elif pct >= 95.0:
+            verdict = "✅ Top 5%"
+        elif pct >= 90.0:
+            verdict = "✅ Top 10%"
+        elif pct >= 50.0:
+            verdict = "⚠ Below threshold"
+        else:
+            verdict = "❌ Missed (vendor-ID issue)"
+        rows.append(
+            {
+                "Event": ev["event"],
+                "Matched Vendor": ev["matched_vendor"],
+                "Year": ev["year"],
+                "Model Rank": f"{ev['rank_model']:,} / {n_vendors:,}",
+                "Percentile": f"{pct:.2f}%",
+                "Verdict": verdict,
+            }
+        )
+    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True, height=420)
+    st.caption(
+        "Note: Aerojet Rocketdyne and TransDigm rank low because their concentration "
+        "is split across subsidiaries / acquired-parent rollups — exactly the "
+        "vendor-identity limitation our production roadmap calls out (CAGE/UEI parent "
+        "rollup, not name-string matching)."
+    )
+
+st.divider()
+
+# ---------------------------------------------------------------------------
 # SECTION 2 — Stress Test (with interactive supply graph)
 # ---------------------------------------------------------------------------
 st.markdown('<div class="cp-section">// 02 · STRESS-TEST SIMULATOR</div>', unsafe_allow_html=True)

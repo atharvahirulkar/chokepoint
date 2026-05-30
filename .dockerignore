@@ -3,7 +3,6 @@
 __pycache__
 *.pyc
 data/raw
-data/synthetic
 mlruns
 mlflow.db
 .pytest_cache

@@ -1,0 +1,85 @@
+{
+  "description": "Curated list of publicly-known defense supply-chain stress events from 2022-2025. Each event names a vendor with documented sole-source or capacity-constraint exposure that produced a real DoD program disruption, mission delay, or industrial-base report. We use this list to validate Chokepoint's model — does the supervised ranker surface these vendors *before* needing the news to tell us?",
+  "events": [
+    {
+      "vendor_query": "NORTHROP GRUMMAN SYSTEMS",
+      "event": "Sentinel ICBM Nunn-McCurdy breach",
+      "year": 2024,
+      "summary": "Sentinel program reported 81% cost growth, triggered Nunn-McCurdy review. Northrop Grumman is sole prime; no alternative supplier for ICBM stage propulsion or guidance integration exists. Industrial-base concentration was a named cause.",
+      "citation": "DoD Acquisition & Sustainment, Nunn-McCurdy notification Jan 2024",
+      "expected_signal": "high"
+    },
+    {
+      "vendor_query": "RAYTHEON",
+      "event": "Patriot / PAC-3 / Stinger production capacity",
+      "year": 2023,
+      "summary": "Ukraine demand outstripped Patriot interceptor production capacity. Raytheon sole-sources Patriot integration and key seekers. DoD allocated $1B+ to multi-year production ramp.",
+      "citation": "Pentagon multi-year procurement requests FY2024-2025",
+      "expected_signal": "high"
+    },
+    {
+      "vendor_query": "AEROJET ROCKETDYNE",
+      "event": "Solid rocket motor monopoly (HIMARS / Patriot / Stinger / Javelin)",
+      "year": 2023,
+      "summary": "Aerojet Rocketdyne is the only domestic supplier of solid-propellant rocket motors for HIMARS, GMLRS, Patriot, Stinger, and Javelin. Lockheed Martin's 2023 acquisition was blocked by FTC over chokepoint concerns; L3Harris completed acquisition mid-2023.",
+      "citation": "FTC v. Lockheed Martin/Aerojet Rocketdyne, 2022; L3Harris-AR merger filings 2023",
+      "expected_signal": "high"
+    },
+    {
+      "vendor_query": "BOEING",
+      "event": "KC-46 tanker and Starliner program troubles",
+      "year": 2024,
+      "summary": "Boeing sole-prime on multiple delayed major programs (KC-46, Starliner, Air Force One). $2B+ in charges across defense divisions FY2023-2024. Supply-chain concentration in Boeing Defense, Space & Security.",
+      "citation": "Boeing 10-K filings 2023-2024",
+      "expected_signal": "high"
+    },
+    {
+      "vendor_query": "L3HARRIS TECHNOLOGIES",
+      "event": "Sentinel second-stage propulsion (post-AR acquisition)",
+      "year": 2024,
+      "summary": "L3Harris acquired Aerojet Rocketdyne mid-2023, inheriting sole-source position on Sentinel second-stage propulsion. Industrial-base reports flagged concentration concerns.",
+      "citation": "Office of Industrial Base Policy report 2024",
+      "expected_signal": "high"
+    },
+    {
+      "vendor_query": "GENERAL DYNAMICS MISSION SYSTEMS",
+      "event": "Columbia-class submarine supply chain",
+      "year": 2024,
+      "summary": "GD Electric Boat is sole-source on Columbia-class submarine hulls and integrated platform systems. Delayed deliveries cascaded across SSBN replacement timeline.",
+      "citation": "GAO-24-106697 Columbia-class submarine report",
+      "expected_signal": "medium-high"
+    },
+    {
+      "vendor_query": "TRANSDIGM",
+      "event": "Spare parts overcharging (DoD IG audit)",
+      "year": 2024,
+      "summary": "TransDigm sole-sources aircraft spare parts across multiple legacy platforms. DoD IG documented systemic overcharging enabled by sole-source position.",
+      "citation": "DoD IG audit DODIG-2019-060 and 2024 follow-up",
+      "expected_signal": "medium"
+    },
+    {
+      "vendor_query": "ROCKWELL COLLINS",
+      "event": "F-35 mission computer concentration",
+      "year": 2023,
+      "summary": "Rockwell Collins (now Collins Aerospace, RTX subsidiary) sole-sources mission computer hardware on F-35. Joint Program Office flagged single-vendor risk in 2023 sustainment review.",
+      "citation": "F-35 JPO sustainment review 2023",
+      "expected_signal": "medium"
+    },
+    {
+      "vendor_query": "BAE SYSTEMS LAND & ARMAMENTS",
+      "event": "M109A7 Paladin howitzer sole-prime",
+      "year": 2024,
+      "summary": "BAE Systems Land & Armaments is sole-prime on M109A7 self-propelled howitzer. Ukraine demand stressed production; Army committed multi-year buy to incentivize capacity expansion.",
+      "citation": "Army FY2025 budget justification book",
+      "expected_signal": "medium"
+    },
+    {
+      "vendor_query": "TEXTRON SYSTEMS",
+      "event": "Shadow / loitering munitions market concentration",
+      "year": 2024,
+      "summary": "Textron Systems holds concentrated position in unmanned ground and short-range loitering systems. Replicator initiative explicitly cited need to diversify suppliers in this category.",
+      "citation": "DoD Replicator initiative announcements 2023-2024",
+      "expected_signal": "low-medium"
+    }
+  ]
+}
