@@ -11,3 +11,6 @@ mlflow.db
 *.egg-info/
 .pytest_cache/
 .env
+
+# Deck working dir (binary, not tracked)
+docs/deck/
