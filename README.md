@@ -1,6 +1,6 @@
 # CHOKEPOINT
 
-**Defense procurement supply-graph intelligence.** I built this solo at the SIC x DS3 x Bow Capital Defense Hackathon (May 29 to 31, 2026).
+**Defense procurement supply-graph intelligence.** Built at the SIC x DS3 x Bow Capital Defense Hackathon (May 29 to 31, 2026).
 
 > Find the single vendors whose failure would collapse defense mission coverage, before an adversary or a disruption finds them first.
 
@@ -190,16 +190,9 @@ chokepoint/
   Dockerfile.api, Dockerfile.dashboard, docker-compose.yml, Makefile, requirements.txt
 ```
 
----
 
-## About this project and why I built it
 
-I am a Master's student in Data Science, finishing in December 2026 and entering the job market shortly after. I built Chokepoint to demonstrate that I can take an ambiguous, real-world problem with no ready-made dataset and carry it all the way to a deployed, evaluated, honestly-documented product on my own.
+## Author
 
-The parts I want a hiring manager to take away: I can engineer a data pipeline at scale, I can design an evaluation that survives scrutiny when ground truth does not exist, I can build and ship the serving layer around a model, and I can frame the work in terms of the domain and the person who would actually use it. The model is not the hard part here. The hard part is making a defensible claim about a problem nobody has labeled, and I think the methodology section is where that shows.
-
----
-
-## License
-
-MIT.
+**Atharva Hirulkar** - MS Data Science, UC San Diego  
+[GitHub](https://github.com/atharvahirulkar) · [LinkedIn](https://linkedin.com/in/atharva-hirulkar)
