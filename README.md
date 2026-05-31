@@ -12,7 +12,7 @@
 
 ## What this is
 
-CHOKEPOINT is an end-to-end ML system that finds structural single points of failure in the U.S. defense industrial base. It streams three fiscal years of public USAspending contract awards into a vendor-to-agency-to-NAICS supply graph, then ranks every vendor by a supervised model that learns from simulated vendor-failure outcomes. The best ranker is served through a FastAPI backend and a Streamlit command-center dashboard, both containerized and deployed live on Hugging Face Spaces.
+CHOKEPOINT is a data-to-deployment ML pipeline that finds structural single points of failure in the U.S. defense industrial base. It streams three fiscal years of public USAspending contract awards into a vendor-to-agency-to-NAICS supply graph, then ranks every vendor by a supervised model that learns from simulated vendor-failure outcomes. The best ranker is served through a FastAPI backend and a Streamlit command-center dashboard, both containerized and deployed live on Hugging Face Spaces.
 
 The hard part is not the model, it is the evaluation. There is no public ground truth for which vendors are systemic chokepoints, so I generate labels by simulating vendor removal on the graph (N-1 contingency analysis) and validate the result against ten publicly documented real-world disruption events. On a held-out test split the supervised model places 80 percent of true chokepoints in its top 10, double the centrality baseline, and 6 of 10 real events land in the top 1 percent of a 49,842-vendor ranking.
 
