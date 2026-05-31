@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="940" viewBox="0 0 1120 940" font-family="-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .lbl   { fill:#0f172a; font-weight:700; }
+      .sub   { fill:#475569; font-size:12.5px; }
+      .tag   { fill:#64748b; font-size:11px; font-weight:700; letter-spacing:1.5px; }
+      .stage { font-size:15px; }
+      .metric{ fill:#0f172a; font-size:12px; font-weight:600; }
+      .edge  { stroke:#64748b; stroke-width:1.6; fill:none; }
+    </style>
+  </defs>
+
+  <!-- canvas -->
+  <rect x="0" y="0" width="1120" height="940" fill="#f8fafc"/>
+  <rect x="0.5" y="0.5" width="1119" height="939" fill="none" stroke="#e2e8f0"/>
+
+  <!-- title -->
+  <text x="40" y="48" fill="#0f172a" font-size="26" font-weight="800" letter-spacing="3">CHOKEPOINT</text>
+  <text x="40" y="70" class="sub" font-size="13">Defense procurement supply-graph intelligence  ·  data-to-demo pipeline</text>
+
+  <!-- ============ LAYER 1: DATA ============ -->
+  <text x="40" y="112" class="tag" fill="#2563eb">01  DATA INGESTION</text>
+  <rect x="40" y="124" width="300" height="78" rx="8" fill="#eff4ff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="60" y="152" class="lbl stage">USAspending bulk archives</text>
+  <text x="60" y="172" class="sub">FY2024 to FY2026 contract awards</text>
+  <text x="60" y="190" class="metric">72 GB raw  ·  6 fiscal years available</text>
+
+  <rect x="410" y="124" width="300" height="78" rx="8" fill="#eff4ff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="430" y="152" class="lbl stage">prefilter.py</text>
+  <text x="430" y="172" class="sub">Stream + filter to DoD sub-agencies</text>
+  <text x="430" y="190" class="metric">chunked read, never loads full file</text>
+
+  <rect x="780" y="124" width="300" height="78" rx="8" fill="#eff4ff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="800" y="152" class="lbl stage">contracts.parquet</text>
+  <text x="800" y="172" class="sub">Normalized, FY-tagged, deduped</text>
+  <text x="800" y="190" class="metric">9.1M defense contract rows</text>
+
+  <path class="edge" d="M340,163 L408,163" marker-end="url(#arrow)"/>
+  <path class="edge" d="M710,163 L778,163" marker-end="url(#arrow)"/>
+
+  <!-- ============ LAYER 2: GRAPH ============ -->
+  <text x="40" y="248" class="tag" fill="#475569">02  GRAPH CONSTRUCTION</text>
+  <rect x="40" y="260" width="1040" height="80" rx="8" fill="#eef1f6" stroke="#475569" stroke-width="1.4"/>
+  <text x="60" y="288" class="lbl stage">supply_graph.pkl  ·  bipartite vendor to agency to NAICS  (NetworkX MultiDiGraph)</text>
+  <text x="60" y="312" class="sub">VENDOR, AGENCY, NAICS nodes  ·  weighted edges carry per-year award value + contract count</text>
+  <text x="60" y="330" class="metric">49,842 vendors   ·   25 sub-agencies   ·   954 NAICS codes   ·   228,336 edges</text>
+
+  <path class="edge" d="M560,202 L560,258" marker-end="url(#arrow)"/>
+
+  <!-- ============ LAYER 3: FEATURES + LABELS ============ -->
+  <text x="40" y="386" class="tag" fill="#7c3aed">03  FEATURE + LABEL ENGINEERING</text>
+
+  <rect x="40" y="398" width="510" height="96" rx="8" fill="#f3eefe" stroke="#7c3aed" stroke-width="1.4"/>
+  <text x="60" y="426" class="lbl stage">features.py  ·  22 per-vendor features</text>
+  <text x="60" y="447" class="sub">Centrality (degree, betweenness, PageRank, eigenvector,</text>
+  <text x="60" y="464" class="sub">articulation), sole-source ratio, HHI, critical-NAICS</text>
+  <text x="60" y="481" class="sub">concentration, temporal persistence (years active, growth)</text>
+
+  <rect x="570" y="398" width="510" height="96" rx="8" fill="#e9f9f1" stroke="#059669" stroke-width="1.4"/>
+  <text x="590" y="426" class="lbl stage">labels.py  ·  simulated counterfactual labels</text>
+  <text x="590" y="447" class="sub">N-1 contingency: remove each vendor, measure the</text>
+  <text x="590" y="464" class="sub">fraction of (agency, NAICS) pairs that lose all suppliers</text>
+  <text x="590" y="481" class="metric">coverage_drop  ·  75/25 train/test split, seed 42</text>
+
+  <path class="edge" d="M300,340 L300,396" marker-end="url(#arrow)"/>
+  <path class="edge" d="M820,340 L820,396" marker-end="url(#arrow)"/>
+
+  <!-- ============ LAYER 4: MODELS ============ -->
+  <text x="40" y="540" class="tag" fill="#7c3aed">04  THREE RANKERS  (trained on train split only)</text>
+
+  <rect x="40" y="552" width="330" height="80" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="60" y="580" class="lbl stage">Baseline</text>
+  <text x="60" y="600" class="sub">Betweenness centrality, no ML</text>
+  <text x="60" y="618" class="metric">recall@10 = 0.40</text>
+
+  <rect x="395" y="552" width="330" height="80" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="415" y="580" class="lbl stage">IsolationForest</text>
+  <text x="415" y="600" class="sub">Unsupervised anomaly score</text>
+  <text x="415" y="618" class="metric">recall@10 = 0.20</text>
+
+  <rect x="750" y="552" width="330" height="80" rx="8" fill="#f3eefe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="770" y="580" class="lbl stage">GradientBoosting (supervised)</text>
+  <text x="770" y="600" class="sub">Trained on coverage_drop labels</text>
+  <text x="770" y="618" class="metric" fill="#7c3aed">recall@10 = 0.80</text>
+
+  <path class="edge" d="M450,494 L300,494 L300,550" marker-end="url(#arrow)"/>
+  <path class="edge" d="M620,494 L620,550" marker-end="url(#arrow)"/>
+  <path class="edge" d="M700,494 L900,494 L900,550" marker-end="url(#arrow)"/>
+
+  <!-- ============ LAYER 5: EVAL ============ -->
+  <text x="40" y="678" class="tag" fill="#b45309">05  EVALUATION  (held-out test split + real-world validation)</text>
+  <rect x="40" y="690" width="510" height="86" rx="8" fill="#fff7ed" stroke="#b45309" stroke-width="1.4"/>
+  <text x="60" y="718" class="lbl stage">eval.py  ·  held-out recall@k</text>
+  <text x="60" y="739" class="sub">Recall@5/10/20/50, 1000-iter bootstrap 95% CIs,</text>
+  <text x="60" y="757" class="metric">Spearman vs true coverage_drop = 0.65</text>
+
+  <rect x="570" y="690" width="510" height="86" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="590" y="718" class="lbl stage">event_validation.py  ·  predictions vs reality</text>
+  <text x="590" y="739" class="sub">10 documented disruption events (Sentinel, Patriot, ...)</text>
+  <text x="590" y="757" class="metric" fill="#dc2626">6 of 10 in top 1%  ·  median percentile 99.16</text>
+
+  <path class="edge" d="M250,632 L250,688" marker-end="url(#arrow)"/>
+  <path class="edge" d="M820,632 L820,688" marker-end="url(#arrow)"/>
+
+  <!-- ============ LAYER 6: SERVING ============ -->
+  <text x="40" y="822" class="tag" fill="#0d9488">06  SERVING</text>
+  <rect x="40" y="834" width="510" height="78" rx="8" fill="#e6f7f5" stroke="#0d9488" stroke-width="1.4"/>
+  <text x="60" y="862" class="lbl stage">FastAPI backend</text>
+  <text x="60" y="882" class="sub">/score  /stress  /explain  /events  /heatmap</text>
+  <text x="60" y="900" class="metric">graph preindexed at startup, sub-ms stress sims</text>
+
+  <rect x="570" y="834" width="510" height="78" rx="8" fill="#e6f7f5" stroke="#0d9488" stroke-width="1.4"/>
+  <text x="590" y="862" class="lbl stage">Streamlit command-center dashboard</text>
+  <text x="590" y="882" class="sub">Leaderboard, live stress test, explain, heatmap, Sankey</text>
+  <text x="590" y="900" class="metric">Dockerized, deployed on Hugging Face Spaces</text>
+
+  <path class="edge" d="M300,776 L300,832" marker-end="url(#arrow)"/>
+  <path class="edge" d="M820,776 L820,832" marker-end="url(#arrow)"/>
+  <path class="edge" d="M550,873 L568,873" marker-end="url(#arrow)"/>
+  <path class="edge" d="M568,860 L552,860" marker-end="url(#arrow)"/>
+</svg>

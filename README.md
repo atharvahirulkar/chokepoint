@@ -1,73 +1,92 @@
 # CHOKEPOINT
 
-**Defense Procurement Supply-Graph Intelligence.** Built solo at the SIC × DS³ × Bow Capital Defense Hackathon (May 29–31, 2026).
+**Defense procurement supply-graph intelligence.** I built this solo at the SIC x DS3 x Bow Capital Defense Hackathon (May 29 to 31, 2026).
 
-> Find the single vendors whose failure collapses defense mission coverage — before an adversary or disruption does.
+> Find the single vendors whose failure would collapse defense mission coverage, before an adversary or a disruption finds them first.
 
-🛰️ **Live demo:** <https://atharvahirulkar-chokepoint.hf.space/>
+**Live demo:** https://atharvahirulkar-chokepoint.hf.space/
+**Source:** https://github.com/atharvahirulkar/chokepoint
 
 ---
 
-## Problem
+## The problem in one paragraph
 
-Defense procurement data is public but unanalyzed for systemic risk. Single vendors quietly sole-source critical NAICS categories across multiple sub-agencies. When they fail — disruption, adversarial compromise, bankruptcy — mission coverage collapses silently, and no public tool surfaces this concentration risk. The DoD Office of Industrial Base Policy currently does this analysis by hand in Excel.
+Defense procurement data is public, but nobody analyzes it for systemic concentration risk. A small number of vendors quietly sole-source critical categories across multiple sub-agencies. When one of them fails, through disruption, adversarial compromise, or bankruptcy, mission coverage collapses silently and no public tool surfaces it in advance. A 10,000 dollar drone can be grounded by a 50 dollar component that has exactly one supplier. The DoD Office of Industrial Base Policy tracks this kind of risk today largely by hand in spreadsheets. I built the prototype of the tool that should replace that spreadsheet.
 
-CHOKEPOINT ingests USAspending bulk contract data, builds the vendor-agency-NAICS supply graph, and ranks vendors by a supervised model trained on simulated counterfactual removal labels. It also restricts the analysis to NAICS in the DoD Critical Technology Areas list (aerospace, missiles, naval propulsion, microelectronics, ordnance, guidance systems).
+---
+
+## What it does
+
+I ingest three fiscal years of USAspending defense contract awards, build a vendor-to-agency-to-NAICS supply graph, and rank every vendor by a supervised model that learns from simulated vendor-failure outcomes. The system runs as a FastAPI backend and a Streamlit command-center dashboard, both containerized and deployed.
+
+The headline result: on a held-out test set, the supervised model puts **80 percent of true chokepoints in its top 10**, double the betweenness-centrality baseline, and **6 of 10 publicly documented real-world disruption events land in the top 1 percent** of its 49,842-vendor ranking.
 
 ---
 
 ## Architecture
 
-```
-                  ┌────────────────────────────┐
-                  │  USAspending FY2026 bulk   │
-                  │  archive (4.4 GB CSV)      │
-                  └──────────────┬─────────────┘
-                                 │ stream-filter (DoD sub-agencies)
-                                 ▼
-                  ┌────────────────────────────┐
-                  │  contracts.parquet         │  ~1.1M defense rows
-                  └──────────────┬─────────────┘
-                                 ▼
-                  ┌────────────────────────────┐
-                  │  supply_graph.pkl          │  17.9k vendors, 24 agencies,
-                  │  (NetworkX MultiDiGraph)   │  747 NAICS, 68k edges
-                  └──────────────┬─────────────┘
-                                 ▼
-              ┌──────────────────┴─────────────────┐
-              ▼                                    ▼
-   ┌─────────────────────┐               ┌─────────────────────┐
-   │ vendor_features     │               │ vendor_labels       │
-   │  9 graph features   │               │  coverage_drop +    │
-   │  + critical-NAICS   │               │  critical-mode via  │
-   │                     │               │  simulated removal  │
-   └──────────┬──────────┘               └──────────┬──────────┘
-              └──────────────────┬──────────────────┘
-                                 ▼
-              ┌────────────────────────────────────┐
-              │  Train (train split only)          │
-              │  - Betweenness baseline            │
-              │  - IsolationForest (unsupervised)  │
-              │  - GradientBoosting supervised     │
-              └──────────────────┬─────────────────┘
-                                 ▼
-              ┌────────────────────────────────────┐
-              │  Eval (held-out test split)        │
-              │  Recall@k + 95% bootstrap CIs      │
-              │  Spearman vs true coverage_drop    │
-              │  Critical-NAICS recall@k           │
-              └──────────────────┬─────────────────┘
-                                 ▼
-            ┌────────────────────┴────────────────────┐
-            ▼                                         ▼
-   ┌──────────────────┐                    ┌──────────────────┐
-   │ FastAPI backend  │ ◄── HTTP/JSON ──▶  │ Streamlit UI     │
-   │ /score /stress   │                    │ leaderboard,     │
-   │ /explain /eval   │                    │ stress simulator,│
-   │ /health /metrics │                    │ explain card,    │
-   └──────────────────┘                    │ eval transparency│
-                                           └──────────────────┘
-```
+![Chokepoint architecture](docs/assets/architecture.svg)
+
+The flow is data to demo in six stages: stream-filter the raw archives, build the graph, engineer features and simulated labels, train three rankers, evaluate on a held-out split plus real events, and serve through an API and dashboard.
+
+---
+
+## Results
+
+I evaluate on a held-out test split (250 vendors, 10 positives) that the supervised model never sees during training. Confidence intervals are 1000-iteration percentile bootstraps.
+
+| Ranker | Recall@5 | Recall@10 | Recall@20 | Recall@50 |
+|---|---|---|---|---|
+| Betweenness baseline | 0.20 | 0.40 | 0.40 | 0.40 |
+| IsolationForest (unsupervised) | 0.10 | 0.20 | 0.50 | 0.80 |
+| **GradientBoosting (supervised)** | **0.40** | **0.80** | **0.90** | **1.00** |
+
+The supervised model wins at every cutoff and beats the centrality baseline by 2x at recall@10 and recall@20. Spearman rank correlation against true simulated coverage drop on the test split: baseline 0.47, IsolationForest 0.50, supervised model **0.65**.
+
+### Validation against real events
+
+There is no public ground truth for real chokepoints, so I also tested the model against ten publicly documented defense supply-chain disruption events from 2022 to 2024 (Sentinel ICBM cost breach, Patriot interceptor capacity, Columbia-class submarines, Boeing KC-46, F-35 mission computer, BAE Paladin, and others).
+
+- **6 of 10** events rank in the **top 1 percent** of the 49,842-vendor model ranking
+- **8 of 10** rank in the top 10 percent
+- **Median percentile: 99.16**
+
+The two misses (Aerojet Rocketdyne and TransDigm) fail for the same documented reason: their concentration is split across subsidiaries and acquired-parent rollups, which is exactly the vendor-identity limitation my production roadmap calls out. Aerojet was acquired by L3Harris in 2023, and L3Harris itself ranks in the top 1 percent.
+
+---
+
+## How the evaluation works
+
+The core methodology is what I am most proud of, because it solves the absence of ground truth honestly.
+
+I generate labels by **simulated counterfactual removal**, which is N-1 contingency analysis borrowed from power-systems engineering and closely related to DebtRank and SinkRank in financial systemic-risk literature. For every vendor in a candidate pool (the top 1000 by graph footprint), I remove the vendor from a copy of the graph and count the fraction of the (agency, NAICS) pairs it served that drop to zero remaining suppliers. That fraction is the `coverage_drop` label.
+
+I split the pool 75/25 with a fixed seed, train the GradientBoosting ranker on the train portion only, and report every metric on the held-out test portion. The betweenness baseline and the IsolationForest are scored on the same held-out vendors so the comparison is fair.
+
+### Feature importance
+
+| Feature | Importance |
+|---|---|
+| `sole_source_breadth` = sole_source_ratio x log(NAICS count) | 33 percent |
+| `critical_breadth` = sole_source_ratio x log(critical-NAICS count) | 31 percent |
+| `footprint` = log(agencies) x log(NAICS count) | 19 percent |
+| Raw centrality, log counts, HHI, temporal | under 5 percent each |
+
+Three engineered interaction features carry roughly 80 percent of the signal, so the model is interpretable rather than a black box. I also engineered temporal persistence features (years active, year-over-year growth, emerging-concentration flags). They added no predictive lift over the structural signals, which I report as an honest null result and keep in the system as descriptive analyst-facing labels.
+
+---
+
+## What I built, by skill area
+
+I designed and implemented every layer of this system solo. Mapping it to the things a data science or ML role cares about:
+
+**End-to-end ML engineering.** I built the full path from 72 GB of raw public CSVs to a deployed product: a streaming chunked ingestion that never loads a full file into memory, a NetworkX graph builder, a feature pipeline, a model trainer with MLflow tracking, a FastAPI service that preindexes the graph for sub-millisecond stress simulations, a Streamlit dashboard, Docker images for both services, and a public deployment on Hugging Face Spaces.
+
+**Rigorous evaluation.** I treated the lack of ground truth as the central research problem, not an afterthought. I designed a counterfactual labeling scheme, enforced a held-out train/test split, quantified uncertainty with bootstrap confidence intervals, and benchmarked against both an unsupervised and a no-ML baseline. When my first evaluation design turned out to be circular (positives defined by the same metric as the baseline), I caught it and rebuilt the ground truth around simulated coverage drop.
+
+**Applied graph and supervised ML.** I computed graph-structural features (degree, betweenness, PageRank, eigenvector centrality, articulation points) on a 50,000-node bipartite graph, engineered domain interaction features, and trained a GradientBoosting ranker that meaningfully outperforms classical centrality.
+
+**Domain framing and product sense.** I aligned the analysis to the DoD Critical Technology Areas list, the DPA Title III investment categories, and NDAA 2022 Section 855, then validated against real reported disruptions. The dashboard is built for an analyst persona, not just a notebook reader.
 
 ---
 
@@ -79,139 +98,105 @@ cd chokepoint
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# Drop the USAspending bulk archive CSVs under data/raw/
-# (e.g. FY2026_All_Contracts_Full_*.csv)
+# Drop USAspending bulk archive CSVs under data/raw/FY{year}_All_Contracts_Full_*/
+make prefilter   # stream + filter to defense sub-agencies, FY-tagged
+make graph       # build the vendor-agency-NAICS MultiDiGraph
+make features    # 22 per-vendor features
+make labels      # simulated removal coverage_drop labels, train/test split
+make train       # baseline + IsolationForest + supervised GradientBoosting
+make eval        # held-out recall@k with bootstrap CIs
+make events      # validate against documented real-world disruptions
 
-make prefilter        # stream-filter to defense sub-agencies → contracts.parquet
-make graph            # build vendor-agency-NAICS MultiDiGraph
-make features         # 9 per-vendor graph features incl. critical-NAICS
-make labels           # simulate removal → coverage_drop labels (train/test split)
-make train            # fit baseline + IsolationForest + supervised GB
-make eval             # held-out recall@k + bootstrap CIs + critical-mode
-
-make serve            # FastAPI on :8000
-make dashboard        # Streamlit on :8501
+make serve       # FastAPI on :8000
+make dashboard   # Streamlit on :8501
 ```
 
-Or with Docker (after running `make all` once to produce the processed artifacts):
+Or run the whole thing with Docker after generating the processed artifacts once:
 
 ```bash
 docker compose up --build
 ```
 
-Dashboard: <http://localhost:8501> · API docs: <http://localhost:8000/docs>
-
 ---
 
-## API Reference
+## API reference
 
 | Endpoint | Description |
 |---|---|
-| `GET /health` | vendors_loaded, graph_nodes, graph_edges |
-| `GET /score?limit=20&sort_by=model_score` | Top-K vendors by `model_score`, `baseline_score`, or `iso_score` |
-| `GET /stress/{vendor_name}` | Live removal simulation: coverage_drop, critical_coverage_drop, NAICS lost, top vulnerable NAICS |
-| `GET /explain/{vendor_name}` | Feature contributions (z-scored value × importance), risk tier, templated rationale |
-| `GET /eval` | Full eval_report.json (recall@k, CIs, top chokepoints, critical-mode tables) |
-| `GET /metrics` | In-memory request counter, avg latency, stress-sim count |
+| `GET /health` | vendors loaded, graph node and edge counts |
+| `GET /score?limit=20&sort_by=model_score` | top-K vendors by model, baseline, or IsolationForest score |
+| `GET /stress/{vendor_name}` | live removal simulation: coverage drop, critical-NAICS drop, vulnerable NAICS |
+| `GET /explain/{vendor_name}` | feature contributions, risk tier, templated rationale |
+| `GET /events` | predictions-vs-reality validation table |
+| `GET /heatmap/critical` | sub-agency by critical-NAICS supplier-count matrix |
+| `GET /eval` | full evaluation report |
+| `GET /metrics` | request counter, average latency, stress-sim count |
 
 Example:
 
 ```bash
-curl "http://localhost:8000/stress/LOCKHEED%20MARTIN"
+curl "http://localhost:8000/stress/RAYTHEON"
 ```
 
 ```json
 {
-  "vendor_name": "LOCKHEED MARTIN",
-  "coverage_drop": 0.0876,
-  "critical_coverage_drop": 0.010,
-  "naics_affected": 16,
-  "critical_naics_affected": 1,
-  "agencies_impacted": 9,
-  "pairs_served": 468,
-  "pairs_lost": 41,
-  "top_vulnerable_naics": [
-    "SOFTWARE AND OTHER PRERECORDED COMPACT DISC, TAPE, AND RECORD REPRODUCING",
-    "RELAY AND INDUSTRIAL CONTROL MANUFACTURING"
-  ]
+  "vendor_name": "RAYTHEON",
+  "coverage_drop": 0.043,
+  "critical_coverage_drop": 0.071,
+  "naics_affected": 32,
+  "critical_naics_affected": 6,
+  "agencies_impacted": 10,
+  "pairs_served": 480,
+  "pairs_lost": 73,
+  "top_vulnerable_naics": ["SPACE RESEARCH AND TECHNOLOGY", "..."]
 }
 ```
 
 ---
 
-## Eval Methodology
-
-There is no public ground truth for which defense vendors are systemic chokepoints. We generate labels via **simulated counterfactual removal**: for each vendor in a candidate pool (top 1000 by graph footprint), remove the vendor and count the fraction of `(agency, NAICS)` pairs it served that lose **all** suppliers. This is the same framework as **N-1 contingency analysis** in power-systems engineering and **DebtRank / SinkRank** for financial systemic risk.
-
-The pool is split 75/25 (seed 42); the supervised model is trained on the train split only and evaluated on the held-out test split.
-
-### Held-out test results (n=250 test vendors, 13 positives)
-
-| Ranker | R@5 | R@10 (95% CI) | R@20 (95% CI) | R@50 |
-|---|---:|:---:|:---:|---:|
-| Betweenness baseline | 0.23 | 0.39 [0.17, 0.62] | 0.54 [0.29, 0.75] | 0.69 |
-| IsolationForest | 0.31 | 0.46 [0.22, 0.67] | 0.54 [0.29, 0.75] | 0.77 |
-| **Supervised GB** | **0.39** | **0.54 [0.38, 0.89]** | **0.92 [0.73, 1.00]** | **1.00** |
-
-CIs are 1000-iter percentile bootstrap. Spearman rank correlation vs true `coverage_drop` on the test split: baseline **0.47** · iso **0.53** · model **0.66**.
-
-### Critical-NAICS mode (n=7 critical positives in test)
-
-Vendors are re-scored against the subset of NAICS in the **DoD Critical Technology Areas** list (aerospace, missile, naval propulsion, microelectronics, ordnance, guidance). Top critical-NAICS chokepoints in the candidate pool include **Ecology MIR**, **B & H International**, **Peck & Hale**, **Booz Allen Hamilton**, and **SAIC**.
-
-### Feature importance (supervised model)
-
-| Feature | Importance |
-|---|---:|
-| `sole_source_breadth` = sole_source_ratio × log(NAICS) | 35% |
-| `critical_breadth` = sole_source_ratio × log(critical_NAICS) | 34% |
-| `footprint` = log(agencies) × log(NAICS) | 13% |
-| Raw centrality, log-counts, HHI | <5% each |
-
-Three engineered interaction features carry 82% of the signal. The model is explainable, not a black box.
-
----
-
 ## Limitations
 
-- **Vendor identity is fragile.** The pipeline uses `recipient_name` with corporate-suffix stripping. Subsidiaries, name changes, and DBA's are not deduplicated. A production version must key on CAGE codes or UEI.
-- **Synthetic eval is a proxy.** We have no ground truth for real disruption events. The simulation captures *structural* chokepoint-ness, not realized failures. 100% recall@50 on simulated labels does not mean 100% recall on real-world failures.
-- **Single fiscal year.** Built on FY2026 contracts only (May 2026 bulk archive). Multi-year analysis would smooth over award-cycle effects and reveal persistent chokepoints.
-- **Bipartite graph, no agency↔NAICS edges.** Centrality measures are computed on the undirected projection because the directed bipartite structure has no shortest paths between agencies and NAICS.
-- **Small positive set.** 13 test positives and 7 critical positives — recall numbers have wide bootstrap CIs. Run on multi-year data to tighten them.
-- **Sub-agency rollup.** Award-line `awarding_agency_name` is almost always "DEPARTMENT OF DEFENSE"; the pipeline rolls up to `awarding_sub_agency_name` (Army, Navy, AF, DLA, ...). Sub-sub-agency (program office) structure is lost.
+I would rather state these plainly than hide them.
+
+- **Vendor identity is name-string based.** I normalize `recipient_name` and strip corporate suffixes, but subsidiaries, name changes, and acquired parents are not unified. This is why Aerojet Rocketdyne and TransDigm rank low despite real concentration. Production needs CAGE or UEI parent rollup.
+- **Synthetic eval is a proxy.** Simulated coverage drop captures structural chokepoint risk, not realized failures. Perfect recall on simulated labels does not mean perfect recall on the real world.
+- **Small positive set.** With 10 test positives, the recall numbers carry wide bootstrap intervals. More fiscal years would tighten them.
+- **Bipartite projection.** Centrality is computed on the undirected projection because the directed bipartite structure has no shortest paths between agencies and NAICS.
+- **Sub-agency rollup.** The award line agency is almost always "Department of Defense," so I roll up to the sub-agency (Army, Navy, Air Force, DLA). Program-office structure below that is lost.
 
 ---
 
-## What Production Would Require
+## What production would require
 
-- **CAGE/UEI as primary key**, not normalized name strings.
-- **Multi-year ingestion** with award lifecycle handling (modifications, cancellations).
-- **Real-time SAM.gov + USAspending API** integration instead of bulk archive downloads.
-- **Graph database** (Neo4j / Memgraph) replacing pickled NetworkX.
-- **Human-in-the-loop analyst feedback** — let procurement officers flag false positives and feed corrections back into training.
-- **NAICS criticality** sourced from authoritative DoD/CTA mappings instead of a hand-curated list.
-- **Multi-objective scoring** — combine chokepoint score with vendor financial health (D&B / Bloomberg) and adversarial-exposure signals.
+- CAGE or UEI as the vendor primary key instead of name strings
+- Real-time SAM.gov and USAspending API ingestion instead of bulk archives
+- A graph database (Neo4j or Memgraph) in place of an in-memory pickle
+- A human-in-the-loop feedback channel so procurement analysts can correct false positives
+- NAICS criticality sourced from an authoritative DoD mapping rather than my curated list
 
 ---
 
-## Layout
+## Repository layout
 
 ```
 chokepoint/
-├── pipeline/           # ingest, prefilter, graph, features, labels, critical_naics
-├── models/             # train (baseline + iso + supervised GB), eval (recall@k + CIs)
-├── api/                # FastAPI: routers/score, stress, explain + state, schemas
-├── dashboard/          # Streamlit app
-├── data/processed/     # parquets (gitignored)
-├── models/artifacts/   # joblib (gitignored)
-├── eval_report.json    # latest eval output
-├── docker-compose.yml
-├── Dockerfile.api
-├── Dockerfile.dashboard
-├── Makefile
-└── requirements.txt
+  pipeline/      ingest, prefilter, build_graph, features, labels, critical_naics, event_validation
+  models/        train (baseline + IsolationForest + supervised GB), eval (recall@k + bootstrap CIs)
+  api/           FastAPI: routers for score, stress, explain + state, schemas, main
+  dashboard/     Streamlit command-center app
+  deploy/        Hugging Face Space bundle (combined image, deploy script)
+  docs/assets/   architecture diagram
+  data/          processed parquet and synthetic eval artifacts
+  Dockerfile.api, Dockerfile.dashboard, docker-compose.yml, Makefile, requirements.txt
 ```
+
+---
+
+## About this project and why I built it
+
+I am a Master's student in Data Science, finishing in December 2026 and entering the job market shortly after. I built Chokepoint to demonstrate that I can take an ambiguous, real-world problem with no ready-made dataset and carry it all the way to a deployed, evaluated, honestly-documented product on my own.
+
+The parts I want a hiring manager to take away: I can engineer a data pipeline at scale, I can design an evaluation that survives scrutiny when ground truth does not exist, I can build and ship the serving layer around a model, and I can frame the work in terms of the domain and the person who would actually use it. The model is not the hard part here. The hard part is making a defensible claim about a problem nobody has labeled, and I think the methodology section is where that shows.
 
 ---
 
