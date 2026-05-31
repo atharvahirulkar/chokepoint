@@ -8,8 +8,6 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 **Live demo:** https://atharvahirulkar-chokepoint.hf.space/
-`/score` · `/stress` · `/explain` · `/events` · `/heatmap` · `/health` · `/docs`
-
 ---
 
 ## What this is
