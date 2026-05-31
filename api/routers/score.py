@@ -12,9 +12,10 @@ ALLOWED_SORT = {"model_score", "baseline_score", "iso_score"}
 
 
 def risk_tier(model_score: float) -> str:
-    if model_score > 0.7:
+    """Tier vendors against calibrated thresholds (top 0.5% / top 5%)."""
+    if model_score >= state.high_threshold:
         return "HIGH"
-    if model_score > 0.4:
+    if model_score >= state.medium_threshold:
         return "MEDIUM"
     return "LOW"
 

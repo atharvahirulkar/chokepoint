@@ -40,6 +40,10 @@ class AppState:
         self.vendor_id_by_name: dict[str, str] = {}
         # Pre-indexed: vendor_id -> set of (agency_id, naics_id) pairs served
         self.served_pairs_by_vendor: dict[str, set[tuple[str, str]]] = {}
+        # Risk-tier thresholds calibrated to the actual model_score
+        # distribution (top 0.5% HIGH, top 5% MEDIUM). Computed at load.
+        self.high_threshold: float = 0.7
+        self.medium_threshold: float = 0.4
 
     def load(self) -> None:
         log.info("Loading scores from %s", SCORES_PATH)
@@ -88,6 +92,18 @@ class AppState:
                 pair_cov[pair].add(vid)
         self.pair_coverage = dict(pair_cov)
         self.served_pairs_by_vendor = served_pairs
+
+        # Calibrate risk-tier thresholds to the actual score distribution.
+        # Top 0.5% -> HIGH, top 5% -> MEDIUM. This produces meaningful
+        # high-risk counts regardless of where the GB ranker compresses
+        # the raw score range.
+        self.high_threshold = float(self.scores["model_score"].quantile(0.995))
+        self.medium_threshold = float(self.scores["model_score"].quantile(0.95))
+        log.info(
+            "Risk thresholds calibrated: HIGH>%.4f  MEDIUM>%.4f",
+            self.high_threshold,
+            self.medium_threshold,
+        )
 
         log.info(
             "State loaded: %d vendors  %d graph nodes  %d edges  %d pairs",

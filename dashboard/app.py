@@ -171,7 +171,7 @@ st.markdown(
       .cp-section-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.4rem; color: var(--text); }
       .cp-section-cap { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.8rem; }
 
-      /* Metrics — overrides Streamlit defaults */
+      /* Metrics - overrides Streamlit defaults */
       [data-testid="stMetric"] {
         background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
         border: 1px solid var(--border);
@@ -253,6 +253,40 @@ st.markdown(
         0%, 100% { background: rgba(255,59,59,0.06); }
         50%      { background: rgba(255,59,59,0.14); }
       }
+
+      /* ------------------------------------------------------------------ */
+      /* Responsive — mobile / narrow tablet                                 */
+      /* ------------------------------------------------------------------ */
+      @media (max-width: 900px) {
+        .block-container { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }
+        .cp-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.6rem;
+          padding: 0.8rem 1rem;
+        }
+        .cp-title { font-size: 1.7rem; letter-spacing: 0.12em; }
+        .cp-sub   { font-size: 0.7rem; letter-spacing: 0.10em; line-height: 1.4; }
+        .cp-status { font-size: 0.7rem; }
+        .cp-radar {
+          width: 140px; height: 140px;
+          top: -40px; right: -40px;
+        }
+        .cp-section { font-size: 0.7rem; letter-spacing: 0.14em; }
+        .cp-section-cap { font-size: 0.8rem; }
+        [data-testid="stMetric"] { padding: 0.55rem 0.65rem; }
+        [data-testid="stMetricLabel"] { font-size: 0.6rem !important; }
+        [data-testid="stMetricValue"] { font-size: 1.2rem !important; }
+        /* Tables: allow horizontal scroll instead of squashing */
+        [data-testid="stDataFrame"] { overflow-x: auto; }
+        .cp-alert, .cp-warn, .cp-ok { font-size: 0.8rem; padding: 0.7rem 0.85rem; }
+      }
+      @media (max-width: 540px) {
+        .cp-title { font-size: 1.35rem; }
+        .cp-sub { font-size: 0.62rem; }
+        .cp-radar { display: none; }
+        .stButton > button { font-size: 0.75rem; padding: 0.4rem 0.6rem; }
+      }
     </style>
     """,
     unsafe_allow_html=True,
@@ -266,7 +300,7 @@ st.markdown(
       <div class="cp-radar"></div>
       <div>
         <div class="cp-title">CHOKEPOINT</div>
-        <div class="cp-sub">DEFENSE PROCUREMENT &nbsp;&nbsp;·&nbsp;&nbsp; SUPPLY-GRAPH INTELLIGENCE &nbsp;&nbsp;·&nbsp;&nbsp; FY2026 USAspending</div>
+        <div class="cp-sub">DEFENSE PROCUREMENT &nbsp;&nbsp;·&nbsp;&nbsp; SUPPLY-GRAPH INTELLIGENCE &nbsp;&nbsp;·&nbsp;&nbsp; FY2024-2026 USAspending</div>
       </div>
       <div class="cp-status">
         <span class="dot"></span>
@@ -294,7 +328,7 @@ c4.metric("Graph Edges", f"{health.get('graph_edges', 0):,}")
 
 
 # ---------------------------------------------------------------------------
-# SECTION 1 — Threat Leaderboard
+# SECTION 1 - Threat Leaderboard
 # ---------------------------------------------------------------------------
 st.markdown('<div class="cp-section">// 01 · THREAT LEADERBOARD</div>', unsafe_allow_html=True)
 st.markdown('<div class="cp-section-cap">Top vendors ranked by supervised chokepoint model. Compare to centrality baseline and unsupervised IsolationForest.</div>', unsafe_allow_html=True)
@@ -341,7 +375,7 @@ if not leaderboard.empty:
     recall = eval_report.get("recall_at_k", {})
     if recall:
         st.caption(
-            f"📊 Held-out test Recall@10 — supervised: "
+            f"📊 Held-out test Recall@10 - supervised: "
             f"**{recall.get('model', {}).get('recall@10', 0):.2f}** | "
             f"betweenness: {recall.get('baseline', {}).get('recall@10', 0):.2f} | "
             f"IsolationForest: {recall.get('iso', {}).get('recall@10', 0):.2f} | "
@@ -350,11 +384,11 @@ if not leaderboard.empty:
 
 
 # ---------------------------------------------------------------------------
-# SECTION 1.5 — Predictions vs reality
+# SECTION 1.5 - Predictions vs reality
 # ---------------------------------------------------------------------------
 st.markdown('<div class="cp-section">// 01-A · PREDICTIONS vs REALITY</div>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="cp-section-cap">External validation: ten publicly-documented defense supply-chain disruption events (2022-2024). For each, where does the named vendor rank in our model — out of 49,842 — <em>without</em> the news telling us?</div>',
+    '<div class="cp-section-cap">External validation: ten publicly-documented defense supply-chain disruption events (2022-2024). For each, where does the named vendor rank in our model - out of 49,842 - <em>without</em> the news telling us?</div>',
     unsafe_allow_html=True,
 )
 
@@ -377,10 +411,10 @@ if events:
             rows.append(
                 {
                     "Event": ev["event"],
-                    "Matched Vendor": "—",
+                    "Matched Vendor": "-",
                     "Year": ev["year"],
-                    "Model Rank": "—",
-                    "Percentile": "—",
+                    "Model Rank": "-",
+                    "Percentile": "-",
                     "Verdict": "❌ Not found",
                 }
             )
@@ -409,7 +443,7 @@ if events:
     st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True, height=420)
     st.caption(
         "Note: Aerojet Rocketdyne and TransDigm rank low because their concentration "
-        "is split across subsidiaries / acquired-parent rollups — exactly the "
+        "is split across subsidiaries / acquired-parent rollups - exactly the "
         "vendor-identity limitation our production roadmap calls out (CAGE/UEI parent "
         "rollup, not name-string matching)."
     )
@@ -417,7 +451,7 @@ if events:
 st.divider()
 
 # ---------------------------------------------------------------------------
-# SECTION 2 — Stress Test (with interactive supply graph)
+# SECTION 2 - Stress Test (with interactive supply graph)
 # ---------------------------------------------------------------------------
 st.markdown('<div class="cp-section">// 02 · STRESS-TEST SIMULATOR</div>', unsafe_allow_html=True)
 st.markdown(
@@ -597,7 +631,7 @@ if stress:
     m4.metric("Agencies Impacted", stress["agencies_impacted"])
 
     # Interactive supply graph
-    st.markdown("**Local supply graph** — vendor in center, blue squares = sub-agencies, triangles = NAICS. Red triangles + edges = coverage lost on removal.")
+    st.markdown("**Local supply graph** - vendor in center, blue squares = sub-agencies, triangles = NAICS. Red triangles + edges = coverage lost on removal.")
     vendor_row = scores_500.loc[scores_500["vendor_name"] == stress["vendor_name"]]
     vendor_features = vendor_row.iloc[0].to_dict() if not vendor_row.empty else None
     graph_html = render_supply_graph(stress["vendor_name"], stress, vendor_features)
@@ -610,10 +644,10 @@ if stress:
 
 
 # ---------------------------------------------------------------------------
-# SECTION 3 — Explain Card
+# SECTION 3 - Explain Card
 # ---------------------------------------------------------------------------
 st.markdown('<div class="cp-section">// 03 · VENDOR EXPLAIN CARD</div>', unsafe_allow_html=True)
-st.markdown('<div class="cp-section-cap">Why the model flagged this vendor — feature contributions (z-scored value × global importance), templated rationale.</div>', unsafe_allow_html=True)
+st.markdown('<div class="cp-section-cap">Why the model flagged this vendor - feature contributions (z-scored value × global importance), templated rationale.</div>', unsafe_allow_html=True)
 
 if explain:
     cA, cB = st.columns([1, 2])
@@ -660,11 +694,11 @@ if explain:
 
 
 # ---------------------------------------------------------------------------
-# SECTION 4 — Defense-Critical NAICS Chokepoints
+# SECTION 4 - Defense-Critical NAICS Chokepoints
 # ---------------------------------------------------------------------------
 st.markdown('<div class="cp-section">// 04 · DEFENSE-CRITICAL NAICS CHOKEPOINTS</div>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="cp-section-cap">Restricted to the DoD Critical Technology Areas NAICS list — aerospace, missiles, naval propulsion, microelectronics, ordnance, guidance. These vendors sole-source national-security capabilities.</div>',
+    '<div class="cp-section-cap">Restricted to the DoD Critical Technology Areas NAICS list - aerospace, missiles, naval propulsion, microelectronics, ordnance, guidance. These vendors sole-source national-security capabilities.</div>',
     unsafe_allow_html=True,
 )
 
@@ -688,7 +722,7 @@ else:
 
 
 # ---------------------------------------------------------------------------
-# SECTION 5 — Sub-agency × critical-NAICS risk heatmap
+# SECTION 5 - Sub-agency × critical-NAICS risk heatmap
 # ---------------------------------------------------------------------------
 st.markdown('<div class="cp-section">// 05 · CONCENTRATION HEATMAP</div>', unsafe_allow_html=True)
 st.markdown(
@@ -753,7 +787,7 @@ if heatmap_data and heatmap_data.get("agencies"):
 
 
 # ---------------------------------------------------------------------------
-# SECTION 6 — Money / risk flow Sankey
+# SECTION 6 - Money / risk flow Sankey
 # ---------------------------------------------------------------------------
 st.markdown('<div class="cp-section">// 06 · MONEY · RISK · FLOW</div>', unsafe_allow_html=True)
 st.markdown('<div class="cp-section-cap">Top chokepoint vendors and the contract-value flow that pools at them. Width = total contract value.</div>', unsafe_allow_html=True)
@@ -824,7 +858,7 @@ if not top10.empty:
 
 
 # ---------------------------------------------------------------------------
-# SECTION 7 — Eval Transparency
+# SECTION 7 - Eval Transparency
 # ---------------------------------------------------------------------------
 st.markdown('<div class="cp-section">// 07 · MODEL EVALUATION</div>', unsafe_allow_html=True)
 with st.expander("Methodology, held-out recall, bootstrap CIs"):
@@ -881,7 +915,7 @@ with st.expander("Methodology, held-out recall, bootstrap CIs"):
 
     st.caption(
         "Labels generated by simulating vendor removal on the bipartite "
-        "(agency × NAICS) supply graph — N-1 contingency analysis. "
+        "(agency × NAICS) supply graph - N-1 contingency analysis. "
         "Train/test split (75/25, seed 42) on the candidate pool of top-1000 vendors "
         "by graph footprint. GradientBoosting trained on the train portion only; all "
         "metrics reported on the held-out test portion."
