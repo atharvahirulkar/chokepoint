@@ -1,7 +1,7 @@
 # CHOKEPOINT
 
 > Defense procurement supply-graph intelligence - find the single vendors whose failure would collapse mission coverage, before a disruption finds them first.
-> USAspending · NetworkX · scikit-learn · GradientBoosting · MLflow · FastAPI · Streamlit · Docker · Hugging Face Spaces
+> USAspending · NetworkX · scikit-learn · GradientBoosting · FastAPI · Streamlit · Docker · Hugging Face Spaces
 
 ![Status](https://img.shields.io/badge/status-live-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.11-blue)
