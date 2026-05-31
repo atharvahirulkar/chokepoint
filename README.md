@@ -5,6 +5,7 @@
 > Find the single vendors whose failure would collapse defense mission coverage, before an adversary or a disruption finds them first.
 
 **Live demo:** https://atharvahirulkar-chokepoint.hf.space/
+
 **Source:** https://github.com/atharvahirulkar/chokepoint
 
 ---
