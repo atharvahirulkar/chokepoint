@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import os
 import time
-from datetime import datetime
 
 import pandas as pd
 import plotly.graph_objects as go
